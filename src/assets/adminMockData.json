@@ -1,0 +1,395 @@
+{
+  "statsOverview": [
+    {
+      "title": "Total Users",
+      "value": "8,452",
+      "change": "+8%",
+      "icon": "FiUsers"
+    },
+    {
+      "title": "Active Agents",
+      "value": "124",
+      "change": "+5%",
+      "icon": "FiUsers"
+    },
+    {
+      "title": "Live Chats",
+      "value": "76",
+      "change": "-3%",
+      "icon": "FiMessageSquare"
+    },
+    {
+      "title": "Pending Reports",
+      "value": "18",
+      "change": "+22%",
+      "icon": "FiAlertTriangle"
+    },
+    {
+      "title": "Resolved Today",
+      "value": "53",
+      "change": "+12%",
+      "icon": "FiCheckCircle"
+    },
+    {
+      "title": "Banned Users",
+      "value": "9",
+      "change": "0%",
+      "icon": "FiUserX"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-001",
+      "avatar": "",
+      "name": "Alex Johnson",
+      "email": "alex@example.com",
+      "role": "admin",
+      "status": "active",
+      "lastActive": "2 mins ago"
+    },
+    {
+      "id": "user-002",
+      "avatar": "",
+      "name": "Sarah Williams",
+      "email": "sarah@company.com",
+      "role": "agent",
+      "status": "active",
+      "lastActive": "15 mins ago"
+    },
+    {
+      "id": "user-003",
+      "avatar": "",
+      "name": "Mike Thompson",
+      "email": "mike.t@mail.com",
+      "role": "client",
+      "status": "suspended",
+      "lastActive": "1 day ago"
+    },
+    {
+      "id": "user-004",
+      "avatar": "",
+      "name": "Emma Davis",
+      "email": "emma.d@business.com",
+      "role": "agent",
+      "status": "away",
+      "lastActive": "30 mins ago"
+    },
+    {
+      "id": "user-005",
+      "avatar": "",
+      "name": "James Wilson",
+      "email": "james@service.com",
+      "role": "client",
+      "status": "banned",
+      "lastActive": "1 week ago"
+    }
+  ],
+  "activeChats": [
+    {
+      "id": "chat-1001",
+      "client": {
+        "id": "client-001",
+        "name": "Robert Chen",
+        "avatar": ""
+      },
+      "agent": {
+        "id": "agent-001",
+        "name": "Lisa Anderson",
+        "avatar": "",
+        "status": "online"
+      },
+      "startedAt": "10:15 AM",
+      "duration": "22 mins",
+      "status": "active",
+      "unreadMessages": 3,
+      "flags": ["language"]
+    },
+    {
+      "id": "chat-1002",
+      "client": {
+        "id": "client-002",
+        "name": "Jennifer Lopez",
+        "avatar": ""
+      },
+      "agent": {
+        "id": "agent-002",
+        "name": "Tom Harrison",
+        "avatar": "",
+        "status": "away"
+      },
+      "startedAt": "9:45 AM",
+      "duration": "52 mins",
+      "status": "active",
+      "unreadMessages": 0,
+      "flags": []
+    },
+    {
+      "id": "chat-1003",
+      "client": {
+        "id": "client-003",
+        "name": "David Miller",
+        "avatar": ""
+      },
+      "agent": {
+        "id": "agent-003",
+        "name": "Karen Smith",
+        "avatar": "",
+        "status": "online"
+      },
+      "startedAt": "11:05 AM",
+      "duration": "12 mins",
+      "status": "active",
+      "unreadMessages": 7,
+      "flags": ["urgent"]
+    }
+  ],
+  "reports": [
+    {
+      "id": "rep-2001",
+      "reporter": {
+        "id": "user-101",
+        "name": "John Peterson",
+        "avatar": ""
+      },
+      "reported": {
+        "id": "user-205",
+        "name": "Mark Taylor",
+        "type": "client"
+      },
+      "chatExcerpt": "User used offensive language and made threats",
+      "reason": "Harassment",
+      "severity": "high",
+      "status": "pending",
+      "timestamp": "30 mins ago",
+      "attachments": ["evidence1.png"]
+    },
+    {
+      "id": "rep-2002",
+      "reporter": {
+        "id": "user-102",
+        "name": "Anna Lewis",
+        "avatar": ""
+      },
+      "reported": {
+        "id": "agent-005",
+        "name": "Daniel Kim",
+        "type": "agent"
+      },
+      "chatExcerpt": "Agent shared confidential information",
+      "reason": "Data leak",
+      "severity": "critical",
+      "status": "pending",
+      "timestamp": "1 hour ago",
+      "attachments": ["screenshot.jpg", "log.txt"]
+    },
+    {
+      "id": "rep-2003",
+      "reporter": {
+        "id": "user-103",
+        "name": "Chris Evans",
+        "avatar": ""
+      },
+      "reported": {
+        "id": "user-207",
+        "name": "Paul Wilson",
+        "type": "client"
+      },
+      "chatExcerpt": "User is spamming the chat with advertisements",
+      "reason": "Spam",
+      "severity": "medium",
+      "status": "reviewed",
+      "timestamp": "3 hours ago",
+      "attachments": []
+    }
+  ],
+  "banRecords": [
+    {
+      "id": "ban-3001",
+      "user": {
+        "id": "user-501",
+        "name": "Kevin Martin",
+        "avatar": "",
+        "email": "kevin@example.com"
+      },
+      "admin": {
+        "id": "admin-001",
+        "name": "Jane Smith"
+      },
+      "reason": "Repeated harassment",
+      "evidence": ["chatlog1.png", "report.pdf"],
+      "issuedAt": "2023-06-10T14:30:00Z",
+      "expiresAt": "permanent",
+      "status": "active"
+    },
+    {
+      "id": "ban-3002",
+      "user": {
+        "id": "user-502",
+        "name": "Amanda Lee",
+        "avatar": "",
+        "email": "amanda@mail.com"
+      },
+      "admin": {
+        "id": "admin-002",
+        "name": "Robert Johnson"
+      },
+      "reason": "Fraudulent activity",
+      "evidence": ["transaction.png"],
+      "issuedAt": "2023-06-12T09:15:00Z",
+      "expiresAt": "2023-09-12T09:15:00Z",
+      "status": "active"
+    },
+    {
+      "id": "ban-3003",
+      "user": {
+        "id": "user-503",
+        "name": "Brian Clark",
+        "avatar": "",
+        "email": "brian@service.com"
+      },
+      "admin": {
+        "id": "admin-001",
+        "name": "Jane Smith"
+      },
+      "reason": "Impersonation",
+      "evidence": [],
+      "issuedAt": "2023-05-20T11:40:00Z",
+      "expiresAt": "2023-06-20T11:40:00Z",
+      "status": "expired"
+    }
+  ],
+  "metrics": {
+    "totalUsers": { "value": "8,452", "change": "+8%" },
+    "activeAgents": { "value": "124", "change": "+5%" },
+    "chatVolume": { "value": "1,842", "change": "+15%" },
+    "resolutionRate": { "value": "89%", "change": "+2%" },
+    "avgResponseTime": { "value": "2m 14s", "change": "-12%" },
+    "satisfactionScore": { "value": "4.6/5", "change": "+0.2" }
+  },
+  "actionLogs": [
+    {
+      "id": "log-4001",
+      "admin": {
+        "id": "admin-001",
+        "name": "Jane Smith",
+        "avatar": ""
+      },
+      "action": "Banned user",
+      "target": "Kevin Martin",
+      "targetType": "user",
+      "timestamp": "2023-06-10 14:30:22",
+      "details": "For repeated violations of community guidelines"
+    },
+    {
+      "id": "log-4002",
+      "admin": {
+        "id": "admin-002",
+        "name": "Robert Johnson",
+        "avatar": ""
+      },
+      "action": "Resolved report",
+      "target": "Report #4567",
+      "targetType": "report",
+      "timestamp": "2023-06-15 13:45:10",
+      "details": "Marked as resolved with warning issued"
+    },
+    {
+      "id": "log-4003",
+      "admin": {
+        "id": "admin-001",
+        "name": "Jane Smith",
+        "avatar": ""
+      },
+      "action": "Edited user",
+      "target": "Sarah Williams",
+      "targetType": "user",
+      "timestamp": "2023-06-15 11:20:05",
+      "details": "Changed user role from client to agent"
+    },
+    {
+      "id": "log-4004",
+      "admin": {
+        "id": "admin-003",
+        "name": "System Admin",
+        "avatar": ""
+      },
+      "action": "Force ended chat",
+      "target": "Chat #8912",
+      "targetType": "chat",
+      "timestamp": "2023-06-15 10:15:33",
+      "details": "Due to inappropriate content"
+    }
+  ],
+  "systemStats": {
+    "systemStatus": "operational",
+    "uptime": "99.98%",
+    "responseTime": "142ms",
+    "services": [
+      {
+        "name": "API Service",
+        "status": "operational",
+        "value": "100%",
+        "trend": "stable",
+        "lastChecked": "1 min ago"
+      },
+      {
+        "name": "Database",
+        "status": "operational",
+        "value": "98%",
+        "trend": "up",
+        "lastChecked": "1 min ago"
+      },
+      {
+        "name": "Web Server",
+        "status": "degraded",
+        "value": "89%",
+        "trend": "down",
+        "lastChecked": "2 mins ago"
+      },
+      {
+        "name": "Chat Service",
+        "status": "operational",
+        "value": "100%",
+        "trend": "stable",
+        "lastChecked": "30 secs ago"
+      },
+      {
+        "name": "Auth Service",
+        "status": "operational",
+        "value": "100%",
+        "trend": "stable",
+        "lastChecked": "45 secs ago"
+      }
+    ],
+    "resources": [
+      {
+        "name": "CPU Usage",
+        "status": "operational",
+        "value": "42%",
+        "trend": "down",
+        "lastChecked": "Now"
+      },
+      {
+        "name": "Memory",
+        "status": "operational",
+        "value": "68%",
+        "trend": "up",
+        "lastChecked": "Now"
+      },
+      {
+        "name": "Disk Space",
+        "status": "degraded",
+        "value": "92%",
+        "trend": "up",
+        "lastChecked": "Now"
+      },
+      {
+        "name": "Network",
+        "status": "operational",
+        "value": "24%",
+        "trend": "stable",
+        "lastChecked": "Now"
+      }
+    ]
+  }
+}

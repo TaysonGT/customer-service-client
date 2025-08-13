@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme { 
+  --shadow-soft: 0 2px 10px 0 rgba(0, 0, 0, 0.05);
+  --shadow-hard: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  --shadow-hover: 0px 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.5);
+  --shadow-inner-lg: inset 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  --color-main: #222831;
+  --color-primary-text: #333333;
+  --color-secondary-text: #555555;
+  --color-hover: #D1D5DB;
+  --color-highlight: #E5E7EB;
+  --color-accent: #3B82F6;
+  --color-secondary-accent: #10B981;
+  --color-background: #EBEBEB;
+  --animate-appear: fade-in .4s;
+  --animate-shimmer: shimmer 1.5s infinite;
+}
+
+@keyframes fade-in {
+  from{
+    opacity: 0;
+  }
+  to{
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from{ transform: translateX(-100%) }
+  to{ transform: translateX(100%) }
+}
+
+@plugin 'tailwind-scrollbar'{
+  nocompatible: true;
+  preferredStrategy: 'pseudoelements'
+}
+
+@font-face {
+  font-family: Arabic;
+  src: url('./assets/fonts/Alexandria-VariableFont_wght.ttf');
+}
+
+@font-face {
+  font-family: Comfortaa;
+  src: url('./assets/fonts/Comfortaa-VariableFont_wght.ttf');
+}
+
+@font-face {
+  font-family: Abominable;
+  src: url('./assets/fonts/Abominable-Condensed-fc.otf');
+}
+
+body{
+  font-family: Arabic;
+}
+
+/* Change the white to any color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
