@@ -22,7 +22,6 @@ export function groupMessages(
       senderInfo: sender
     };
   }
-  console.log("participants: ", participants)
 
   messages.forEach((message) => {
     const sender = participants.find(a => a.id === message.senderId);

@@ -18,6 +18,7 @@ const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void
   const [showEmoji, setShowEmoji] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [playingAudio, setPlayingAudio] = useState<string|null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef(0);
   const prevScrollHeightRef = useRef(0);
@@ -158,6 +159,8 @@ const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void
               <MessageGroup 
                 group={group}
                 isCurrentUser={group.senderId === currentUser?.id}
+                setAudio={(id: string|null)=>setPlayingAudio(id)}
+                audio={playingAudio}
               />
             </div>
           ))}
@@ -181,7 +184,7 @@ const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void
         </AnimatePresence>
 
         <MessageInput
-          onSend={(content, type, meta) => sendMessage({content, type, messagesEndRef, meta})}
+          onSend={({content, type, meta, file}) => sendMessage({content, type, messagesEndRef, meta, file})}
           handleTyping={handleTyping}
           setShowEmoji={setShowEmoji}
           showEmoji={showEmoji}

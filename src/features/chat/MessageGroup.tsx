@@ -6,10 +6,14 @@ import Message from './Message';
 // Memoized MessageGroup Component
 const MessageGroup = memo(({ 
   group,
-  isCurrentUser
+  isCurrentUser,
+  audio,
+  setAudio
 }: { 
   group: IMessageGroup;
   isCurrentUser: boolean;
+  audio: string|null;
+  setAudio: (id: string|null)=>void;
 }) => {
   const groupClass = isCurrentUser 
     ? 'items-start' 
@@ -32,7 +36,7 @@ const MessageGroup = memo(({
           {group.senderInfo.firstname} {group.senderInfo.lastname}
         </div>
         {group.messages.map((message, i) => (
-          <Message key={i} {...{message, isCurrentUser, i}}/>
+          <Message key={i} {...{message, isCurrentUser, audio, setAudio, i}}/>
         ))}
         <span className={`text-xs text-gray-700`}>
           {new Date(group.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}

@@ -15,6 +15,7 @@
   --color-secondary-accent: #10B981;
   --color-background: #EBEBEB;
   --animate-appear: fade-in .4s;
+  --animate-slide-up: slide-up .2s;
   --animate-shimmer: shimmer 1.5s infinite;
 }
 
@@ -23,6 +24,17 @@
     opacity: 0;
   }
   to{
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from{
+    transform: translateY(10px);
+    opacity: .5;
+  }
+  to{
+    transform: translateY(0);
     opacity: 1;
   }
 }

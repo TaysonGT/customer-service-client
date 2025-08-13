@@ -4,6 +4,7 @@ import { MdEmojiEmotions, MdSend } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
 import RecordRTC from 'recordrtc';
 import { IMessageType } from '../../types/types';
+import FileUploader from './FileUploader';
 
 const MessageInput = memo(({ 
   onSend,
@@ -12,43 +13,72 @@ const MessageInput = memo(({
   className = '',
   handleTyping
 }: { 
-  onSend: (content: string, type: IMessageType, meta?:{duration?: number, height?:number, width?:number}) => void;
+  onSend: ({content, type, meta, file}: {content: string, type: IMessageType, file?: File, meta?:{duration?: number, height?:number, width?:number, name?: string, size?: number, type?: string}}) => void;
   showEmoji: boolean;
   setShowEmoji: (show: boolean) => void;
   handleTyping: () => void;
   className?: string;
 }) => {
-  const [inputMessage, setInputMessage] = useState('');
-  const messageRef = useRef<HTMLTextAreaElement>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioURL, setAudioURL] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [playbackTime, setPlaybackTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const recorderRef = useRef<RecordRTC | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
+const [selectedFile, setSelectedFile] = useState<File | null>(null);
+const [fileType, setFileType] = useState<IMessageType | null>(null);
+const [inputMessage, setInputMessage] = useState('');
+const messageRef = useRef<HTMLTextAreaElement>(null);
+const [isRecording, setIsRecording] = useState(false);
+const [audioURL, setAudioURL] = useState<string | null>(null);
+const [isPlaying, setIsPlaying] = useState(false);
+const [showFileUpload, setShowFileUpload] = useState(false);
+const [recordingTime, setRecordingTime] = useState(0);
+const [playbackTime, setPlaybackTime] = useState(0);
+const [duration, setDuration] = useState(0);
+const audioRef = useRef<HTMLAudioElement | null>(null);
+const recorderRef = useRef<RecordRTC | null>(null);
+const streamRef = useRef<MediaStream | null>(null);
+const timerRef = useRef<NodeJS.Timeout | null>(null);
+const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSend = useCallback(() => {
-    if (inputMessage.trim()) {
-      onSend(inputMessage, 'text');
-      setInputMessage('');
-    } else if (audioURL) {
-      onSend(audioURL, 'audio', {duration});
-      setAudioURL(null);
-    }
-  }, [inputMessage, audioURL, onSend]);
+// Add this function to handle file selection
+const handleFileSelect = (file: File) => {
+  setSelectedFile(file);
+  setFileType(file.type.startsWith('image/') ? 'image' : 'document');
+};
+
+// Add this function to handle file cancel
+const handleFileCancel = () => {
+  setSelectedFile(null);
+  setFileType(null);
+};
+
+const handleSend = useCallback(() => {
+  if (inputMessage.trim()) {
+    onSend({content: inputMessage, type: 'text'});
+    setInputMessage('');
+  } else if (audioURL) {
+    onSend({content: audioURL, type:'audio', meta:{ duration }});
+    setAudioURL(null);
+  } else if (selectedFile) {
+    // You'll need to handle the file upload in your parent component
+    onSend({content: URL.createObjectURL(selectedFile), type: fileType!, meta:{
+      name: selectedFile.name,
+      size: selectedFile.size,
+      type: selectedFile.type
+    }});
+    setSelectedFile(null);
+    setFileType(null);
+  }
+}, [inputMessage, audioURL, selectedFile, fileType, onSend, duration]);
+
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       recorderRef.current = new RecordRTC(stream, {
-        type: 'audio',
-        mimeType: 'audio/wav',
+        type: 'audio', // RecordRTC will handle the conversion
+        mimeType: 'audio/wav', // RecordRTC will handle the conversion
+        recorderType: RecordRTC.StereoAudioRecorder,
+        desiredSampRate: 16000,
+        numberOfAudioChannels: 1,
+        timeSlice: 4000,
       });
       recorderRef.current.startRecording();
       setIsRecording(true);
@@ -125,11 +155,25 @@ const MessageInput = memo(({
     }
   }, [audioURL]);
 
+  useEffect(() => {
+    console.log(selectedFile)
+  }, [selectedFile]);
+
   return (
     <div className={`${className} p-4 bg-white w-full`}>
       <div className="flex items-center gap-2">
-        <div className='flex gap-2 text-lg text-gray-500'>
-          <button className="p-2 hover:text-blue-500" aria-label="Attach file">
+        <div className='relative flex gap-2 text-lg text-gray-500'>
+          <button 
+            className="p-2 hover:text-blue-500" 
+            aria-label="Attach file"
+            onClick={() => {
+              setShowFileUpload(!showFileUpload);
+              if (showFileUpload) {
+                setSelectedFile(null);
+                setFileType(null);
+              }
+            }}
+          >
             <FaPaperclip />
           </button>
           <button
@@ -139,8 +183,14 @@ const MessageInput = memo(({
           >
             {isRecording ? <FaStop /> : <FaMicrophone />}
           </button>
+          {showFileUpload&& (
+            <FileUploader 
+              onFileSelect={handleFileSelect}
+              onCancel={handleFileCancel}
+              onClose={()=>setShowFileUpload(false)}
+            />
+          )}
         </div>
-
         {isRecording ? (
           <div className="flex-1 bg-gray-100 rounded-2xl p-3 flex items-center justify-center">
             <div className="font-mono text-sm text-gray-700">
@@ -218,8 +268,8 @@ const MessageInput = memo(({
 
         <button
           onClick={handleSend}
-          disabled={!inputMessage.trim() && !audioURL}
-          className={`p-3 rounded-full ${(inputMessage.trim() || audioURL) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}
+          disabled={!inputMessage.trim() && !audioURL && !selectedFile}
+          className={`p-3 rounded-full ${(inputMessage.trim() || audioURL || selectedFile) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}
           aria-label="Send message"
         >
           <MdSend className="text-xl" />

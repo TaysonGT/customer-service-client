@@ -4,11 +4,26 @@ import { RiCheckDoubleFill, RiErrorWarningFill } from 'react-icons/ri';
 import { FaDownload, FaFileAlt, FaPlay } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import supabase from '../../lib/supabase';
+import AudioPlayer from './VoiceMessage';
 
 const URL_REGEX = /(?:(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z]{2,}){1,}(?:\/[^\s]*)?|(?:[a-z0-9-]+\.(?:com|net|org|io|co|gov|edu|me|ly|app|dev|ai|sh|gl|fm|bit\.ly|mm\.co)[^\s]*))/gi;
 
+interface Props { 
+  message: IChatMessage, 
+  isCurrentUser: boolean, 
+  audio: string|null,
+  setAudio: (id:string|null)=>void,
+  i: number 
+}
+
+const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
 // Memoized Message Component
-const Message = ({ message, isCurrentUser, i }: { message: IChatMessage, isCurrentUser: boolean, i: number }) => {
+const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i }) => {
   const [url, setUrl] = useState<string|null>(null)
 
   const messageClass = isCurrentUser
@@ -22,14 +37,14 @@ const Message = ({ message, isCurrentUser, i }: { message: IChatMessage, isCurre
       if(message.type==='text') return;
       const getUrl = async()=>{
         if(!message.file) return;
-        console.log(message.file.path)
+        if(message.localId) return setUrl(message.file.path);
         const {data:url} = await supabase.storage
-          .from('chats_uploads')
-          .createSignedUrl(message.file.path, 3600)
-          setUrl(url?.signedUrl||null)
+        .from('chats_uploads')
+        .createSignedUrl(message.file.path, 3600)
+        setUrl(url?.signedUrl || null)
       }
       getUrl()
-    },[])
+    },[message])
 
   // Function to detect URLs and convert them to links
    const renderWithLinks = (text: string) => {
@@ -76,47 +91,32 @@ const Message = ({ message, isCurrentUser, i }: { message: IChatMessage, isCurre
     if (lastIndex < text.length) {
       parts.push(text.substring(lastIndex));
     }
-    
     return parts.length > 0 ? parts : text;
   };
-
 
    const renderMessageContent = () => {
     switch (message.type) {
       case 'audio':
         return (
-          <div className="flex items-center gap-3 p-2">
-            <button 
-              onClick={() => {
-                const audio = new Audio(url||undefined);
-                audio.play();
-              }}
-              className="p-2 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200"
-            >
-              <FaPlay />
-            </button>
-            <span>Audio Message</span>
-            <a 
-              href={url||'#'} 
-              download={`audio-${message.createdAt}.wav`}
-              className="ml-auto p-2 text-gray-500 hover:text-blue-500"
-            >
-              <FaDownload />
-            </a>
-          </div>
+          <AudioPlayer {...{
+            url, 
+            createdAt:message.createdAt, 
+            isPlaying: audio === message.id,
+            onPlay:() => setAudio(message.id),
+            onPause:() => setAudio(null)}}/>
         );
 
       case 'image':
         return (
           <div className="max-w-xs">
             <img 
-              src={message.content} 
+              src={url||'#'} 
               alt="Sent image" 
               className="rounded-md max-h-60 object-contain"
-              onClick={() => window.open(message.content, '_blank')}
+              onClick={() => window.open(url||"#", '_blank')}
             />
             <a 
-              href={message.content} 
+              href={url||'#'} 
               download={`image-${message.createdAt}.jpg`}
               className="mt-2 inline-flex items-center text-sm text-blue-500 hover:underline"
             >
@@ -132,10 +132,10 @@ const Message = ({ message, isCurrentUser, i }: { message: IChatMessage, isCurre
             <FaFileAlt className="text-2xl text-gray-500" />
             <div className="flex-1 min-w-0">
               <p className="truncate font-medium">{message.file?.name || 'File'}</p>
-              <p className="text-xs text-gray-500">{message.file?.size || ''}</p>
+              <p className="text-xs text-gray-500">{formatFileSize(message.file?.size||0) || ''}</p>
             </div>
             <a 
-              href={message.content} 
+              href={url||'#'} 
               download={message.file?.name || `file-${message.createdAt}`}
               className="p-2 text-blue-500 hover:text-blue-700"
             >

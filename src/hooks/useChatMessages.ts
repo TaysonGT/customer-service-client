@@ -28,8 +28,6 @@ export const useChatMessages = ({chatId, updatesOnly = false, chat}:{chatId: str
         params: { cursor, limit: 20, initial: !cursor }
       });
 
-      console.log(data.messages.map((m:IChatMessage)=>m.status))
-      
       setParticipants(prev => prev.length>0 ? prev : data.participants);
       
       setGroups(prev => {
@@ -53,14 +51,14 @@ export const useChatMessages = ({chatId, updatesOnly = false, chat}:{chatId: str
   }, [chatId, cursor, groupMessages]);
 
   
-  const getAudioBlob = async (audioURL: string) => {
+  const getFileBlob = async (blobUrl: string, type: IMessageType) => {
     try {
       // Convert Blob URL to actual Blob
-      const response = await fetch(audioURL);
+      const response = await fetch(blobUrl);
       const audioBlob = await response.blob();
       
       // Generate unique filename
-      const fileName = `audio_${currentUser!.id}_${Date.now()}.wav`;
+      const fileName = type==='audio'? `audio_${currentUser!.id}_${Date.now()}.wav`:null;
       
       return {file: audioBlob, fileName, fileSize: audioBlob.size};
     } catch (error) {
@@ -69,10 +67,10 @@ export const useChatMessages = ({chatId, updatesOnly = false, chat}:{chatId: str
     }
   };
 
-  const sendMessage = useCallback(async ({content, type, messagesEndRef, file, meta}:{content: string, type: IMessageType, messagesEndRef?: React.RefObject<HTMLDivElement|null>, file?:File|null, meta?:{duration?: number, height?:number, width?:number}}) => {
+  const sendMessage = useCallback(async ({content, type, messagesEndRef, meta}:{content: string, type: IMessageType, messagesEndRef?: React.RefObject<HTMLDivElement|null>, file?:File|null, meta?:{duration?: number, height?:number, width?:number, name?: string, size?: number, type?: string}}) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return toast.error('Authentication required');
-      if (!file&&(type==='document'||type==='image')) return toast.error('No file to upload');
+      if (!(meta&&content)&&(type==='document'||type==='image')) return toast.error('No file to upload');
   
       // Generate both IDs upfront
       const localId = `local-${Date.now()}`;
@@ -85,9 +83,9 @@ export const useChatMessages = ({chatId, updatesOnly = false, chat}:{chatId: str
         file: type != 'text'?{
           bucket: '',
           path: content,
-          name: '',
+          name: meta?.name||'',
           type: type as 'audio'|'image'|'document',
-          size: file?.size||0,
+          size: meta?.size||0,
           meta
         }:undefined,
         type,
@@ -109,33 +107,38 @@ export const useChatMessages = ({chatId, updatesOnly = false, chat}:{chatId: str
 
       try {
         let filePath = '';
-        let audioBlob = type==='audio'? await getAudioBlob(content) : null
+        let fileBlob = type!=='audio'? await getFileBlob(content, type) : null
         // Upload file first if needed
-        if (type !== 'text' && (file||audioBlob)) {
+        if (type !== 'text' && (fileBlob)) {
           const uploadResult = await supabase.storage
             .from('chats_uploads')
-            .upload(`${type==='audio'?'audio': `${type}s`}/${chatId}/${audioBlob?.fileName||file!.name}`, audioBlob?.file || file!);
+            .upload(`${type==='audio'?'audio': `${type}s`}/${chatId}/${fileBlob.fileName||meta?.name}`, fileBlob?.file);
           
           if (uploadResult.error) throw uploadResult.error;
           filePath = uploadResult.data.path;
         }
-
-        console.log(audioBlob, filePath, file)
         
-        const { data:fileData, error: fileError } = await supabase
+        const data = type!=='text'? await supabase
           .from('files_metadata')
           .insert({
             path: filePath,
             bucket: 'chats_uploads',
-            name: audioBlob?.fileName||file!.name,
-            size: audioBlob?.fileSize||file!.size,
+            name: fileBlob?.fileName||meta!.name,
+            size: fileBlob?.fileSize,
             type,
-            meta,
+            meta:{
+              width: meta?.width,
+              height: meta?.height,
+              duration: meta?.duration
+            },
           })
           .select()
           .single()
+          :null;
 
-          if (fileError) throw fileError;
+          if (data) {
+            if(data.error) throw data.error;
+          }
 
           const { data: message, error: msgError } = await supabase
             .from('chat_messages')
@@ -147,7 +150,7 @@ export const useChatMessages = ({chatId, updatesOnly = false, chat}:{chatId: str
               senderId: currentUser!.id,
               senderType: currentUser!.role,
               status: 'delivered',
-              file_id: fileData.id
+              ...(data?.data&& {file_id: data.data.id})
             })
             .select()
             .single();
