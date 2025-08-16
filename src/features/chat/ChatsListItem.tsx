@@ -20,8 +20,26 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
   const [lastVisibleText, setLastVisibleText] = useState<string>('')
   const textRef = useRef<HTMLDivElement>(null);
   const {currentUser} = useAuth()
-  const { lastMessage, isLoading, participants } = useChatMessages({chatId:chat.id, updatesOnly:true, chat})
-  const { typingUsers } = useTypingStatus(chat.id, currentUser)
+  const { lastMessage, isLoading, unreadMessages } = useChatMessages({chatId:chat.id, updatesOnly:true, chat})
+  const { typingUsers } = useTypingStatus(chat.id, currentUser, true)
+
+  const getTypingText = () => {
+    if (typingUsers.length === 0) return null;
+    if (typingUsers.length === 1) {
+      const user = chat.participants.find(p => p.id === typingUsers[0].id);
+      return `${user?.firstname} is typing...`;
+    }
+    if (typingUsers.length === 2) {
+      const names = typingUsers.map(user => 
+        chat.participants.find(p => p.id === user.id)?.firstname
+      ).join(' and ');
+      return `${names} are typing...`;
+    }
+    const names = typingUsers.slice(0, 2).map(user => 
+      chat.participants.find(p => p.id === user.id)?.firstname
+    ).join(', ');
+    return `${names} and ${typingUsers.length - 2} others are typing...`;
+  };
 
   const handleMouseEnter = () => {
     if(textRef.current){
@@ -154,33 +172,36 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
                 </span>
               </div>
             </div>
-            
-            {typingUsers.length > 0 ? (
-              <div className="flex items-center">
-                <div className="flex space-x-[2px] mr-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" style={{animationDelay: '0ms'}}></div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" style={{animationDelay: '150ms'}}></div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" style={{animationDelay: '300ms'}}></div>
-                </div>
-                <p className="text-xs text-blue-600">
-                  {typingUsers.length <= 2 
-                    ? `${typingUsers.map(user => participants?.find(p=>p.id==user.id)?.firstname).join(', ')} ${typingUsers.length === 1 ? 'is' : 'are'} typing...`
-                    : `${typingUsers.slice(0,2).map(user => participants?.find(p=>p.id==user.id)?.firstname).join(', ')} and ${typingUsers.length-2} others typing...`
-                  }
-                </p>
-              </div>
-            ) : lastMessage ? (
-              <p className="text-sm text-gray-600 flex items-center gap-1">
-                <span className="truncate grow">{lastVisibleText}</span>
-                {chat.unread_messages && (
-                  <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center shrink-0 justify-center text-white text-[10px]">
-                    {chat.unread_messages > 9 ? '9+' : chat.unread_messages}
+            <div className='w-full flex items-center gap-1'>
+              {typingUsers.length > 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-1 grow"
+                >
+                  <span className="flex space-x-[2px]">
+                    <span className="inline-block w-1 h-1 rounded-full bg-blue-500 animate-bounce" 
+                      style={{ animationDelay: '0ms' }} />
+                    <span className="inline-block w-1 h-1 rounded-full bg-blue-500 animate-bounce" 
+                      style={{ animationDelay: '150ms' }} />
+                    <span className="inline-block w-1 h-1 rounded-full bg-blue-500 animate-bounce" 
+                      style={{ animationDelay: '300ms' }} />
                   </span>
-                )}
-              </p>
-            ) : (
-              <p className="text-sm text-gray-400 italic">Start chatting now</p>
-            )}
+                  <span className='text-sm text-gray-600'>{getTypingText()}</span>
+                </motion.div>
+              ) : lastMessage ? (
+                <p className="text-sm truncate text-gray-600 grow">
+                  {lastVisibleText}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-400 italic w-full">Start chatting now</p>
+              )}
+              {unreadMessages.length > 0 && (
+                <span className="h-4 aspect-square rounded-full bg-blue-500 flex items-center shrink-0 justify-center text-white text-xs">
+                  {unreadMessages.length > 99 ? '+99' : unreadMessages.length}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         
