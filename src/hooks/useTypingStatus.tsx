@@ -4,7 +4,7 @@ import { ICurrentUser } from '../types/types';
 
 export type TypingUser =  Omit<ICurrentUser, 'email'|'firstname'|'lastname'>;
 
-export const useTypingStatus = (chatId: string, currentUser: TypingUser|null) => {
+export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, updatesOnly:boolean = false) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const typingTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
@@ -12,7 +12,7 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null) =>
   const setTyping = async (isTyping: boolean) => {
     if(!currentUser) return
     await supabase
-      .from('typing_status')
+      .from(`typing_status`)
       .upsert(
         { 
           chat_id: chatId, 
@@ -29,7 +29,7 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null) =>
   useEffect(() => {
     if(!currentUser) return;
     const channel = supabase
-      .channel(`typing:${chatId}`)
+      .channel(`typing_status:${chatId}:${updatesOnly? 'updates_only': 'main'}`)
       .on(
         'postgres_changes',
         {

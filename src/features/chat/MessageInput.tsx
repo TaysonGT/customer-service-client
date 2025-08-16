@@ -155,10 +155,6 @@ const handleSend = useCallback(() => {
     }
   }, [audioURL]);
 
-  useEffect(() => {
-    console.log(selectedFile)
-  }, [selectedFile]);
-
   return (
     <div className={`${className} p-4 bg-white w-full`}>
       <div className="flex items-center gap-2">

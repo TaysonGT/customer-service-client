@@ -42,7 +42,7 @@ export interface IChat {
   client: IUser;
   startedAt: string;
   updatedAt: string;
-  unread_messages: number;
+  unread_messages: IChatMessage[];
   status: 'active'|'waiting';
 }
 

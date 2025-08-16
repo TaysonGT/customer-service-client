@@ -1,7 +1,7 @@
 import { MdCheck, MdOutlineTimelapse } from 'react-icons/md';
 import { IChatMessage } from '../../types/types';
 import { RiCheckDoubleFill, RiErrorWarningFill } from 'react-icons/ri';
-import { FaDownload, FaFileAlt, FaPlay } from 'react-icons/fa';
+import { FaDownload, FaFileAlt } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import supabase from '../../lib/supabase';
 import AudioPlayer from './VoiceMessage';
@@ -109,12 +109,14 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
       case 'image':
         return (
           <div className="max-w-xs">
-            <img 
-              src={url||'#'} 
-              alt="Sent image" 
-              className="rounded-md max-h-60 object-contain"
-              onClick={() => window.open(url||"#", '_blank')}
-            />
+            <div className='w-60 h-60'>
+              <img 
+                src={url||'#'} 
+                alt="Sent image"
+                className="rounded-md h-full object-contain"
+                onClick={() => window.open(url||"#", '_blank')}
+              />
+            </div>
             <a 
               href={url||'#'} 
               download={`image-${message.createdAt}.jpg`}
