@@ -1,33 +1,31 @@
 // File: src/features/tickets/TicketDetails.tsx
 import React, { useState } from 'react';
 import { 
-  FiAlertCircle, FiUser, FiMail, FiPhone, 
-  FiClock, FiTag, FiMessageSquare, FiPaperclip 
+  FiUser, FiMail, FiPhone, 
+  FiClock, FiTag, FiPaperclip 
 } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { TicketPriority, TicketStatus, TicketType } from '../../types/types';
 
 interface TicketDetailsProps {
-  client: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-  };
+  ticket: TicketType;
+  onUpdate: (updatedTicket: TicketType) => void;
 }
 
-const TicketDetails: React.FC<TicketDetailsProps> = ({ client }) => {
+const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onUpdate }) => {
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState('open');
-  const [priority, setPriority] = useState('high');
+  const [currentStatus, setCurrentStatus] = useState(ticket.status);
+  const [currentPriority, setCurrentPriority] = useState(ticket.priority);
 
-  const ticket = {
-    id: 'TKT-1001',
-    subject: 'Payment failed for order #12345',
-    description: 'Customer reports payment failure when trying to complete purchase. Error message shows "Payment declined"',
-    createdAt: '2023-06-15 14:30',
-    updatedAt: '2023-06-15 15:45',
-    category: 'Billing',
-    attachments: ['error_screenshot.png', 'payment_log.pdf']
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value as TicketStatus;
+    setCurrentStatus(newStatus);
+    onUpdate({ ...ticket, status: newStatus });
+  };
+
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPriority = e.target.value as TicketPriority;
+    setCurrentPriority(newPriority);
+    onUpdate({ ...ticket, priority: newPriority });
   };
 
   return (
@@ -38,26 +36,32 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ client }) => {
             <h2 className="text-xl font-semibold">{ticket.subject}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className={`px-2 py-1 text-xs rounded-full ${
-                status === 'open' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                currentStatus === 'open' ? 'bg-red-100 text-red-800' : 
+                currentStatus === 'resolved' ? 'bg-green-100 text-green-800' :
+                'bg-yellow-100 text-yellow-800'
               }`}>
-                {status === 'open' ? 'Open' : 'Closed'}
+                {currentStatus.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}
               </span>
               <span className={`px-2 py-1 text-xs rounded-full ${
-                priority === 'high' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+                currentPriority === 'high' ? 'bg-orange-100 text-orange-800' : 
+                currentPriority === 'critical' ? 'bg-purple-100 text-purple-800' :
+                'bg-blue-100 text-blue-800'
               }`}>
-                {priority === 'high' ? 'High Priority' : 'Normal Priority'}
+                {currentPriority.charAt(0).toUpperCase() + currentPriority.slice(1)} Priority
               </span>
             </div>
           </div>
           <div className="text-sm text-gray-500">
             <span className="flex items-center gap-1">
               <FiClock size={14} />
-              Created: {ticket.createdAt}
+              Created: {new Date(ticket.createdAt).toLocaleString()}
             </span>
-            <span className="flex items-center gap-1 mt-1">
-              <FiClock size={14} />
-              Updated: {ticket.updatedAt}
-            </span>
+            {ticket.resolvedAt && (
+              <span className="flex items-center gap-1 mt-1">
+                <FiClock size={14} />
+                Resolved: {new Date(ticket.resolvedAt).toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
 
@@ -71,20 +75,7 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ client }) => {
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <h3 className="font-medium mb-2">Conversation</h3>
               <div className="space-y-4">
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex justify-between text-sm text-gray-500 mb-1">
-                    <span>Support Agent</span>
-                    <span>2 hours ago</span>
-                  </div>
-                  <p>We've identified the issue with your payment method. Please try updating your card details.</p>
-                </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <div className="flex justify-between text-sm text-gray-500 mb-1">
-                    <span>{client.name}</span>
-                    <span>1 hour ago</span>
-                  </div>
-                  <p>I've updated my card but still getting the same error message.</p>
-                </div>
+                {/* Conversation history would go here */}
               </div>
 
               <div className="mt-4">
@@ -113,15 +104,15 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ client }) => {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <FiUser className="text-gray-400" />
-                  <span>{client.name}</span>
+                  <span>{ticket.requester.firstname} {ticket.requester.lastname}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FiMail className="text-gray-400" />
-                  <span>{client.email}</span>
+                  <span>{ticket.requester.email}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FiPhone className="text-gray-400" />
-                  <span>{client.phone}</span>
+                  <span>{ticket.requester.phone}</span>
                 </div>
               </div>
             </div>
@@ -133,42 +124,53 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ client }) => {
                   <span className="text-gray-600">Category:</span>
                   <span className="flex items-center gap-1">
                     <FiTag className="text-gray-400" />
-                    {ticket.category}
+                    {ticket.category || 'Uncategorized'}
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-600">Priority:</span>
                   <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
+                    value={currentPriority}
+                    onChange={handlePriorityChange}
                     className="px-2 py-1 text-xs rounded border border-gray-300"
                   >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
                     <option value="high">High</option>
-                    <option value="normal">Normal</option>
+                    <option value="critical">Critical</option>
                   </select>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-600">Status:</span>
                   <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    value={currentStatus}
+                    onChange={handleStatusChange}
                     className="px-2 py-1 text-xs rounded border border-gray-300"
                   >
                     <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="resolved">Resolved</option>
                     <option value="closed">Closed</option>
                   </select>
                 </div>
+                {ticket.assignee && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Assigned To:</span>
+                    <span>{ticket.assignee.firstname} {ticket.assignee.lastname}</span>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <h3 className="font-medium mb-2">Attachments</h3>
-              {ticket.attachments.length > 0 ? (
+              {ticket.attachments && ticket.attachments.length > 0 ? (
                 <div className="space-y-2">
-                  {ticket.attachments.map((file, index) => (
+                  {ticket.attachments.map((attachment, index) => (
                     <div key={index} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded">
                       <FiPaperclip className="text-gray-400" />
-                      <span className="text-sm">{file}</span>
+                      <span className="text-sm">{attachment.name}</span>
                     </div>
                   ))}
                 </div>

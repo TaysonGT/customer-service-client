@@ -5,6 +5,7 @@ import { FaDownload, FaFileAlt } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import supabase from '../../lib/supabase';
 import AudioPlayer from './VoiceMessage';
+import { FiClock } from 'react-icons/fi';
 
 const URL_REGEX = /(?:(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z]{2,}){1,}(?:\/[^\s]*)?|(?:[a-z0-9-]+\.(?:com|net|org|io|co|gov|edu|me|ly|app|dev|ai|sh|gl|fm|bit\.ly|mm\.co)[^\s]*))/gi;
 
@@ -171,7 +172,10 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
       {renderMessageContent()}
       {isCurrentUser && (
         message.status === "sending" ?
-          <MdOutlineTimelapse className='bottom-2 left-1 text-secondary-text text-sm absolute' />
+        // <MdOutlineTimelapse className='bottom-2 left-1 text-secondary-text text-sm absolute' />
+          <div className='bottom-2 left-1 text-secondary-text text-sm absolute' >
+          <FiClock size={14} />
+          </div>
           :message.status === "seen" ?
             <RiCheckDoubleFill className='bottom-2 left-1 text-accent text-sm absolute' />
             : message.status === "delivered" ?

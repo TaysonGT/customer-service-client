@@ -27,9 +27,64 @@ export type IUser = {
   username: string;
   firstname: string;
   lastname: string;
-  avatarUrl: string;
   role: 'client' | 'support_agent' | 'admin';
   email: string;
+  gender: string;
+  description?: string;
+  password: string;
+  confirmPassword: string;
+  categoryId: string;
+  supportId: string;
+  phone: string;
+  last_seen_at: string;
+  avatarUrl?: string;
+  countryCode?: string;
+    company?: string;
+  jobTitle?: string;
+  clientType?: 'individual' | 'business';
+  status?: 'prospect' | 'active' | 'inactive' | 'vip';
+  leadSource?: string;
+  
+  // Address
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  // Social
+  socialProfiles?: {
+    twitter?: string;
+    linkedin?: string;
+    facebook?: string;
+    instagram?: string;
+  };  
+  // Preferences
+  preferences?: {
+    timezone?: string;
+    language?: string;
+    contactMethod?: 'email' | 'phone' | 'sms' | 'whatsapp';
+    notificationPreferences?: {
+      marketing?: boolean;
+      productUpdates?: boolean;
+    };
+  };
+}
+
+export type TicketType = {
+    id: string;
+    subject: string;
+    status: string;
+    priority: string;
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    category: string;
+    attachments: Partial<IFile>[];
+    requester: Partial<IUser>;
+    assignee: Partial<IUser>|null;
+    resolvedAt: string|null;
 }
 
 export interface IChat {
@@ -47,6 +102,21 @@ export interface IChat {
 }
 
 export type IMessageType = "text" | "audio" | "image" | "document"
+
+export enum TicketStatus {
+  OPEN = 'open',
+  IN_PROGRESS = 'in_progress',
+  ON_HOLD = 'on_hold',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed'
+}
+
+export enum TicketPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical'
+}
 
 export interface IFile {
   path: string;

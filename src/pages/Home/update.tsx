@@ -4,20 +4,15 @@ import {
   FiMessageSquare, FiUsers, FiInbox, FiArchive, 
   FiHelpCircle, FiSettings, FiPlus 
 } from 'react-icons/fi';
-import ChatList from '../../features/chat/ChatList';
-import ChatBox from '../../features/chat/ChatBoxFixed';
-import ClientProfile from '../../features/crm/ClientProfile';
-import KnowledgeBase from '../../features/knowledge/KnowledgeBase';
-import TicketList from '../../features/tickets/TicketList';
-import TicketDetails from '../../features/tickets/TicketDetails';
-import ClientList from '../../features/crm/ClientList';
+import ChatSector from './ChatSector';
+import TicketSector from './TicketSector';
+import ClientSector from './ClientSector';
+import KnowledgeSector from './KnowledgeSector';
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('chats');
-  const [selectedChat, setSelectedChat] = useState<any>(null);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
+  
   const [unassignedCount, setUnassignedCount] = useState(12);
-  const [myTicketsCount, setMyTicketsCount] = useState(8);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -88,48 +83,22 @@ const HomePage = () => {
         </div>
         
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Panel - List View */}
-          <div className="w-full md:w-80 border-r border-gray-200 flex flex-col">
-            {activeTab === 'chats' && (
-              <ChatList 
-                onSelect={setSelectedChat} 
-                selected={selectedChat}
-              />
+            {activeTab === 'chats'&& (
+              <ChatSector />
             )}
             
-            {activeTab === 'tickets' && (
-              <TicketList 
-                onSelect={(ticket) => {
-                  setSelectedChat(null);
-                  setSelectedClient(ticket.client);
-                }} 
-              />
+            {activeTab === 'tickets' &&(
+              <TicketSector />
             )}
             
             {activeTab === 'clients' && (
-              <ClientList onSelect={setSelectedClient} />
+              <ClientSector />
             )}
-          </div>
-          
-          {/* Right Panel - Detail View */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {activeTab === 'chats' && selectedChat && (
-              <ChatBox chat={selectedChat} />
-            )}
-            
-            {activeTab === 'tickets' && selectedClient && (
-              <TicketDetails client={selectedClient} />
-            )}
-            
-            {activeTab === 'clients' && selectedClient && (
-              <ClientProfile client={selectedClient} />
-            )}
-            
             {activeTab === 'knowledge' && (
-              <KnowledgeBase />
+              <KnowledgeSector />
             )}
             
-            {!selectedChat && !selectedClient && activeTab !== 'knowledge' && (
+            {!activeTab && (
               <div className="flex-1 flex items-center justify-center text-gray-500">
                 <div className="text-center p-8">
                   <FiHelpCircle className="mx-auto text-4xl mb-4" />
@@ -141,7 +110,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

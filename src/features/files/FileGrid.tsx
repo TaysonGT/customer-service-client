@@ -4,6 +4,7 @@ import { FiFile, FiImage, FiDownload, FiMoreVertical } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { Button } from '../../components/ui';
 import { FileItem } from './FileDisplay';
+import { formatDate } from '../../utils/time';
 
 interface FileGridProps {
   files?: FileItem[];
@@ -83,7 +84,7 @@ const FileGrid: React.FC<FileGridProps> = ({ files = [], isLoading }) => {
             </h3>
             <div className="mt-2 flex justify-between items-center">
               <span className="text-xs text-gray-500">{file.size}</span>
-              <span className="text-xs text-gray-400">{formatDate(file.uploaded_at)}</span>
+              <span className="text-xs text-gray-400">{formatDate(file.uploaded_at, {withTime: true})}</span>
             </div>
             <div className="mt-3 flex justify-end gap-1">
               <Button variant="ghost" size="sm" icon={<FiDownload />} />
@@ -97,12 +98,3 @@ const FileGrid: React.FC<FileGridProps> = ({ files = [], isLoading }) => {
 };
 
 export default FileGrid
-
-// Helper function
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-};

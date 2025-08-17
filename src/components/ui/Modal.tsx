@@ -1,6 +1,7 @@
 // File: src/components/ui/Modal.tsx
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DarkBackground from '../DarkBackground';
 
 interface ModalProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ interface ModalProps {
 export const Modal: React.FC<ModalProps> = ({ 
   isOpen, 
   onClose, 
-  title, 
+  title,
   children,
   size = 'md'
 }) => {
@@ -46,23 +47,17 @@ export const Modal: React.FC<ModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
-            onClick={onClose}
-          />
+          <DarkBackground {...{show: isOpen, cancel: onClose}}/>
           
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full ${sizeClasses[size]} z-50`}
+            className={`fixed top-1/2 left-1/2 -translate-1/2 max-h-[90vh] min-h-0 flex flex-col overflow-hidden ${sizeClasses[size]} p-4 z-102`}
           >
-            <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <div className="bg-white rounded-lg shadow-xl flex flex-col h-full min-h-0">
+              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0">
                 <h3 className="text-lg font-medium text-gray-900">{title}</h3>
                 <button
                   onClick={onClose}
@@ -74,22 +69,8 @@ export const Modal: React.FC<ModalProps> = ({
                 </button>
               </div>
               
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto grow min-h-0">
                 {children}
-              </div>
-              
-              <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                >
-                  Save
-                </button>
               </div>
             </div>
           </motion.div>
