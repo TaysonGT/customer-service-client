@@ -8,7 +8,7 @@ export interface imageType {
 export interface IAuthContext {
   currentUser: ICurrentUser | null;
   isLoading: boolean;
-  loginUser: (email: string, password: string, role: "client" | "support_agent") => Promise<void>;
+  loginUser: (email: string, password: string, role: "client" | "support") => Promise<void>;
   logoutUser: () => Promise<void>;
 }
 

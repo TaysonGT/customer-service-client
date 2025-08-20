@@ -19,7 +19,7 @@ const ProtectedRoutes = ({roles}:{roles:string[]}) => {
   }
 
   if(currentUser === null){
-    return getLastLoginRole() === 'support_agent'?
+    return getLastLoginRole() === 'support'?
       <Navigate to='/auth/login/support' replace state={{from: location}} />
       : <Navigate to='/auth/login/client' replace state={{from: location}} />
   }

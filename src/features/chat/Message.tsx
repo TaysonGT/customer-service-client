@@ -174,7 +174,7 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
         message.status === "sending" ?
         // <MdOutlineTimelapse className='bottom-2 left-1 text-secondary-text text-sm absolute' />
           <div className='bottom-2 left-1 text-secondary-text text-sm absolute' >
-          <FiClock size={14} />
+            <FiClock size={14} />
           </div>
           :message.status === "seen" ?
             <RiCheckDoubleFill className='bottom-2 left-1 text-accent text-sm absolute' />

@@ -3,6 +3,7 @@ import { RiCloseLine } from 'react-icons/ri';
 import { FiUploadCloud, FiFile } from 'react-icons/fi';
 import supabase from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 import { useAxiosAuth } from '../../hooks/useAxiosAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import Loader from '../../components/Loader';
@@ -17,6 +18,7 @@ const UploadFile: React.FC<Props> = ({ cancel, onUploadSuccess }) => {
   const [uploadType, setUploadType] = useState<'document' | 'image'>('image');
   const [isLoading, setIsLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const {currentUser} = useAuth()
   const api = useAxiosAuth();
 
   const isImageFile = useCallback((file: File) => {
@@ -71,7 +73,7 @@ const UploadFile: React.FC<Props> = ({ cancel, onUploadSuccess }) => {
         throw new Error('Unauthenticated access');
       }
 
-      const filePath = `${user.user_metadata.id}/${uploadType === 'image' ? 'images' : 'documents'}/${Date.now()}-${selectedFile.name}`;
+      const filePath = `${currentUser?.id}/${uploadType === 'image' ? 'images' : 'documents'}/${Date.now()}-${selectedFile.name}`;
 
       const { data: uploadData, error: uploadError } = await supabase
         .storage
@@ -80,7 +82,7 @@ const UploadFile: React.FC<Props> = ({ cancel, onUploadSuccess }) => {
 
       if (uploadError) throw uploadError;
 
-      const response = await api.post(`/data/${uploadType}s/client`, {
+      const response = await api.post(`/data`, {
         bucket: 'clients_data',
         name: selectedFile.name,
         type: uploadType,

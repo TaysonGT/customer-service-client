@@ -46,8 +46,12 @@ const ClientSector = ()=>{
     };
 
     return (
+        isLoading?(
+            <div className="h-full w-full flex justify-center items-center">
+                <Loader size={40} thickness={2}/>
+            </div>
+        ):
         <>
-            {isLoading&&<Loader/>}
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New Client">
                 <NewClientForm 
                     onSubmit={(newClient)=>handleNewClient(newClient)} 

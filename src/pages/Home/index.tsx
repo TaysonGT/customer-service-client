@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { IChat } from '../../types/types'
 import ChatBoxFixed from '../../features/chat/ChatBoxFixed'
-import ChatListItem from '../../features/chat/ChatsListItem'
+import ChatListItem from '../../features/chat/ChatListItem'
 import { FaServicestack } from 'react-icons/fa'
 import DataManager from '../../features/files/SidebarDataManager'
 import { useAxiosAuth } from '../../hooks/useAxiosAuth'

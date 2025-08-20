@@ -64,7 +64,7 @@ const FileDisplay = () => {
     };
 
     fetchData();
-  }, [api]);
+  }, []);
     
 
   const data:FileItem[] = files.length>0? files: [
@@ -131,7 +131,11 @@ const FileDisplay = () => {
       {/* Enhanced File Display */}
       <div className="p-4">
         
-        {viewMode === 'grid' ? (
+        {isLoading?
+          <div className='flex justify-center py-10'>
+            <Loader size={30} thickness={6} />
+          </div>
+        :viewMode === 'grid' ? (
           <FileGrid {...{files, isLoading}} />
         ) : (
           <FileTable {...{files, isLoading}} />

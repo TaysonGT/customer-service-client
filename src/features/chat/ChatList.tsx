@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useAxiosAuth } from '../../hooks/useAxiosAuth';
 import { IChat } from '../../types/types';
 import toast from 'react-hot-toast';
-import ChatListItem from './ChatsListItem';
+import ChatListItem from './ChatListItem';
 
 interface ChatListProps {
   onSelect: (chat: IChat|null) => void;

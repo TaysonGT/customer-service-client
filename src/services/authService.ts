@@ -1,48 +1,31 @@
 import supabase from '../lib/supabase';
 import axios from 'axios';
 import { setLastLoginRole } from '../utils/auth.utils';
-import { ICurrentUser } from '../types/types';
+import { createAxiosAuthInstance } from './axiosAuth';
 
-export async function login(username: string, password: string, role: "client" | "support_agent"|"admin") {
+export async function login(username: string, password: string, role: "client" | "support") {
   if (!username || !password) {
     throw new Error('Username and password are required');
   }
 
-  const response = await axios.post(`/auth/username-resolve/${role}`, { username })
+  const api = createAxiosAuthInstance()
+
+  const {data: resolvedData} = await axios.post(`/auth/username-resolve/${role}`, { username })
   .catch(error => {throw new Error(error.response?.data?.error || 'Failed to resolve username')});
   
 
-  const email = response.data.email;
+  const email = resolvedData.email;
     
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
+  
+  setLastLoginRole('client')
+  const {data: userData} = await api.get(`/auth/user/me`)
 
-  const user = data.user;
-
-  if(role==="client"){
-    const { data: userData, error: userError } = await supabase
-      .from('clients')
-      .select('id, firstname, lastname, email, avatarUrl')
-      .eq('email', user.email)
-      .single();
+  if (!userData.success) throw new Error(userData.message);
   
-    if (userError) throw new Error(userError.message);
-    const safeUser:ICurrentUser = { ...userData, role };
-    setLastLoginRole('client')
-    return { safeUser, session: data.session };
-  }else{
-    const { data: userData, error: userError } = await supabase
-      .from('support_agents')
-      .select('id, firstname, lastname, email, avatarUrl')
-      .eq('email', user.email)
-      .single();
-  
-    if (userError) throw new Error(userError.message);
-    const safeUser:ICurrentUser = { ...userData, role };
-    setLastLoginRole('support_agent')
-    return { safeUser, session: data.session };
-  }
-  
+  setLastLoginRole('support')
+  return { userData: userData.user , session: data.session }
 }
 
 export async function register(email: string, password: string) {

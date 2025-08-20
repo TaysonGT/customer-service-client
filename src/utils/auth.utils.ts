@@ -1,4 +1,4 @@
-type LoginRole = "client" | "support_agent";
+type LoginRole = "client" | "support";
 
 const LAST_LOGIN_KEY = "last_login_role";
 const LOGIN_HISTORY_KEY = "login_history";

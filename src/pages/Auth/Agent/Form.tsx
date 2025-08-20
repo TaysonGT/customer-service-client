@@ -31,7 +31,7 @@ const Form = () => {
   const onSubmit = async (data: LoginFormData) => {
     setFormError(null); // Clear previous errors
     setIsSubmitting(true)
-    await loginUser(data.username, data.password, 'support_agent')
+    await loginUser(data.username, data.password, 'support')
       .then(() => {
         nav('/'); // Redirect to home on successful login
       })

@@ -20,7 +20,7 @@ function App() {
         { zIndex: 9999, marginTop: '80px', userSelect: "none"} 
       }/>
         <Routes>
-          <Route path='/' element={<ProtectedRoutes roles={['admin', 'support_agent', 'client']}/>}>
+          <Route path='/' element={<ProtectedRoutes roles={['admin', 'support', 'client']}/>}>
             <Route index path='/' element={<AdminDashboard />}/>
             <Route index path='/agents' element={<HomePage />}/>
             <Route index path='/my-data' element={<DataManagementPage />}/>
