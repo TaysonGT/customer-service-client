@@ -1,29 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { useAxiosAuth } from '../../hooks/useAxiosAuth';
+import React, { useEffect } from 'react';
 import { IChat } from '../../types/types';
-import toast from 'react-hot-toast';
 import ChatListItem from './ChatListItem';
 
 interface ChatListProps {
   onSelect: (chat: IChat|null) => void;
   selected: IChat|null;
+  chats: IChat[];
 }
 
-const ChatList: React.FC<ChatListProps> = ({ onSelect, selected }) => {
-  const [chats, setChats] = useState<IChat[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const api = useAxiosAuth()
-  
-  useEffect(()=>{
-    api.get('/chats/me')
-    .then(({data})=>{
-      data.success?
-        setChats(data.chats)
-      :toast.error(data.message)
-    }).catch(()=>toast.error('Error occured when loading chats'))
-    .finally(()=> setIsLoading(false))
-  },[])
+const ChatList: React.FC<ChatListProps> = ({ onSelect, selected, chats }) => {
 
   // Handle Escape key
   useEffect(() => {
@@ -36,14 +21,14 @@ const ChatList: React.FC<ChatListProps> = ({ onSelect, selected }) => {
 
   return (
     <div className="divide-y divide-gray-200 bg-white h-full overflow-y-auto">
-      {isLoading?
+      {/* {isLoading?
       [...Array(20)].map((_,i)=>
         <motion.div
           key={i}
           className="p-4 rounded-lg border-l-4 border-transparent"
         >
           <div className="flex w-full overflow-hidden justify-between items-start">
-            {/* Left side - Avatar and text */}
+            // Left side - Avatar and text
             <div className="flex w-full items-start gap-3">
               <div className="relative w-10 h-10 shrink-0">
                 <div className="relative w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
@@ -67,7 +52,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelect, selected }) => {
               </div>
             </div>
             
-            {/* Right side - Time and indicator */}
+            // Right side - Time and indicator 
             <div className="flex flex-col items-end shrink-0 pl-2 space-y-2">
               <div className="relative h-3 w-10 rounded-md bg-gray-200 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-100/50 to-transparent animate-[shimmer_1.5s_infinite]" />
@@ -78,7 +63,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelect, selected }) => {
             </div>
           </div>
           
-          {/* Status bar */}
+          // Status bar
           <div className="flex justify-between items-center mt-3 pt-3">
             <div className="flex gap-1.5">
               <div className="relative h-5 w-16 rounded-full bg-gray-200 overflow-hidden">
@@ -93,7 +78,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelect, selected }) => {
             </div>
           </div>
         </motion.div>
-      ):chats.map((chat, i) => (
+      ): */}
+      {chats.map((chat, i) => (
         <ChatListItem key={i} {...{chat, setChat: onSelect, selectedChat: selected}} />
       ))}
     </div>

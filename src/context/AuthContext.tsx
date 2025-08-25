@@ -3,6 +3,7 @@ import { IAuthContext, ICurrentUser } from '../types/types';
 import supabase from '../lib/supabase';
 import { login, logout } from '../services/authService';
 import { createAxiosAuthInstance } from '../services/axiosAuth';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
@@ -20,8 +21,12 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
   })
 
   const loginUser = async (email: string, password: string, role: "client"|"support") => {
-    const { userData } = await login(email, password, role)
-    setCurrentUser(userData||null);
+    await login(email, password, role)
+    .then(({userData})=>{
+      setCurrentUser(userData||null)
+    }).catch((error)=>{
+      toast.error(error.message)
+    })
   };
 
   const getUserData = async () => {
@@ -33,19 +38,23 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     api.get('/auth/user/me')
     .then(({data})=>{
       setCurrentUser(data.user)
-    }).catch(({response})=>logout())
+    }).catch(()=>logout())
     .finally(()=>setIsLoading(false))
   };
 
   // Call this function whenever the user interacts with your app
   const updateLastSeen = async () => {
-    const {data} = await supabase.auth.getSession()
     if(!currentUser || currentUser?.role === 'admin') return;
 
     await supabase
       .from('users')
       .update({ lastSeenAt: new Date().toISOString() })
-      .eq('sb_uid', data.session?.user.id)
+      .eq('id', currentUser?.id)
+      // .select()
+      // .then(({data, error})=>{
+      //   console.log(data)
+      //   console.log(error)
+      // })
   };
 
   // Example: Update on mount and every 30 seconds

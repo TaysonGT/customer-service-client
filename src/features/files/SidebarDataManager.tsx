@@ -49,7 +49,7 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
       try {
         if (!selectedChat) return;
 
-        const clientId = selectedChat?.participants?.find(p => p.role === 'client')?.id;
+        const clientId = selectedChat?.users?.find(p => p.clientProfile)?.id;
         if (!clientId) throw new Error('No client provided');
 
         setIsLoading(true);
@@ -188,7 +188,7 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
         <div className="p-4 border-b border-gray-200 relative z-10">
           <h2 className="text-lg font-semibold text-gray-900">Client Data</h2>
           <p className="text-xs text-gray-500 mt-1">
-            {selectedChat.participants?.find(p => p.role === 'client')?.firstname}'s files
+            {selectedChat.users?.find(p => p.clientProfile)?.firstname}'s files
           </p>
         </div>
 

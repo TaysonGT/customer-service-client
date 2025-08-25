@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import supabase from '../lib/supabase';
 import { ICurrentUser } from '../types/types';
 
-export type TypingUser =  Omit<ICurrentUser, 'email'|'firstname'|'lastname'>;
+export type TypingUser =  Omit<ICurrentUser, 'email'|'firstname'|'lastname'|'role'>;
 
 export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, updatesOnly:boolean = false) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
@@ -17,7 +17,6 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
         { 
           chat_id: chatId, 
           user_id: currentUser.id,
-          user_role: currentUser.role,
           is_typing: isTyping,
           last_updated: new Date().toISOString()
         },
@@ -39,15 +38,14 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
           filter: `chat_id=eq.${chatId}`
         },
         async (payload) => {
-          const { user_id, user_role, is_typing } = payload.new as {
+          const { user_id, is_typing } = payload.new as {
             user_id: string,
-            user_role: 'client' | 'support_agent',
             is_typing: boolean
           };
 
-          if (user_id === currentUser.id && user_role === currentUser.role) return;
+          if (user_id === currentUser.id) return;
 
-          const userKey = `${user_role}:${user_id}`;[]
+          const userKey = `user:${user_id}`;[]
           
           if (typingTimeoutRef.current[userKey]) {
             clearTimeout(typingTimeoutRef.current[userKey]);
@@ -57,20 +55,19 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
           
           setTypingUsers(prev => {
             const others = prev.filter(u => 
-              !(u.id === user_id && u.role === user_role)
+              !(u.id === user_id)
             );
 
             if (is_typing) {
 
               typingTimeoutRef.current[userKey] = setTimeout(() => {
                 setTypingUsers(prev => prev.filter(u => 
-                  !(u.id === user_id && u.role === user_role))
+                  !(u.id === user_id))
                 );
               }, 5000);
 
               return [...others, { 
-                id: user_id, 
-                role: user_role, 
+                id: user_id,
               }];
             }
 
@@ -91,7 +88,7 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
       Object.values(typingTimeoutRef.current).forEach(clearTimeout);
       setTyping(false); // Clear status on unmount
     };
-  }, [chatId, currentUser?.id, currentUser?.role]);
+  }, [chatId, currentUser?.id]);
 
   return { typingUsers, setTyping };
 };

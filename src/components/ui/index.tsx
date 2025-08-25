@@ -7,6 +7,9 @@ import {Tabs} from './Tabs'
 import {Tab} from './Tabs'
 import {Tooltip} from './Tooltip'
 import {Modal} from './Modal'
+import {Loader} from './Loader'
+import {FileUploadWithPreview} from './FileUploadWithPreview'
+import {StatusBadge} from './StatusBadge'
+import {UserInfo} from './UserInfo'
 
-
-export {Card, Input, Button, Badge, Avatar, Tabs, Tab, Tooltip, Modal}
+export {Card, Input, Button, Badge, StatusBadge, UserInfo, Avatar, Tabs, Tab, Tooltip, Modal, Loader, FileUploadWithPreview}

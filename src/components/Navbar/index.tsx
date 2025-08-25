@@ -1,5 +1,4 @@
 import { RiChat3Line, RiLogoutCircleRLine, RiNotification3Line, RiSearch2Line } from "react-icons/ri"
-import { ICurrentUser } from "../../types/types"
 import { MdArrowDropDown, MdSettings } from "react-icons/md"
 import { FaRegUserCircle } from "react-icons/fa"
 import { useRef, useState } from "react"
@@ -7,20 +6,20 @@ import { useOutsideClick } from "../../hooks/useOutsideClick"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigate } from "react-router"
 
-const Navbar = ({currentUser}:{currentUser:ICurrentUser}) => {
+const Navbar = () => {
     const [showDrop, setShowDrop] = useState<boolean>(false)
     const dropDownRef = useRef<HTMLDivElement>(null)
     const menuBtnRef = useRef<HTMLDivElement>(null)
-    const {logoutUser} = useAuth()
+    const {logoutUser, currentUser} = useAuth()
     
     const nav = useNavigate()
     useOutsideClick(dropDownRef, ()=>setShowDrop(false), [menuBtnRef])
 
   return (
-    <div className='w-screen pl-27.75 py-4 bg-slate-50 z-[10] border-b border-gray-200'>
+    <div className='w-full pl-20 py-4 bg-white z-[10] border-b border-gray-200'>
         <div className='flex justify-between items-center w-[90%] mx-auto'>
             <div className='relative'>
-                <input className='p-2 px-4 bg-white rounded-3xl' placeholder='Search...' type="search" />
+                <input className='p-2 px-4 bg-slate-50 rounded-3xl' placeholder='Search...' type="search" />
                 <RiSearch2Line className="absolute top-1/2 -translate-y-1/2 right-6 cursor-pointer"/>
             </div>
             <div className="text-3xl flex items-center gap-4">
@@ -34,13 +33,13 @@ const Navbar = ({currentUser}:{currentUser:ICurrentUser}) => {
                     ref={menuBtnRef} 
                     onClick={()=>setShowDrop(prev=>!prev)}>
                         <div className="border border-primary-text rounded-full h-8 w-8 overflow-hidden">
-                            <img src={currentUser.avatarUrl||'/src/assets/imgs/1.webp'} alt="" className='h-full w-full'/>
+                            <img src={currentUser?.avatarUrl||'/src/assets/imgs/1.webp'} alt="" className='h-full w-full'/>
                         </div>
                         <div className="text-sm border-l border-primary-text pl-2 gap-4 flex items-center">
                             <div>
-                                <p>{currentUser.firstname} {currentUser.lastname}</p> 
+                                <p>{currentUser?.firstname} {currentUser?.lastname}</p> 
                                 <p className="text-[10px] text-accent">
-                                    {currentUser.role.replace('_', ' ').split(' ').map(s=>s[0].toUpperCase()+s.slice(1).toLowerCase()+' ')}
+                                    {currentUser?.role.replace('_', ' ').split(' ').map(s=>s[0].toUpperCase()+s.slice(1).toLowerCase()+' ')}
                                 </p>
                             </div>
                             <MdArrowDropDown className="text-xl"/>

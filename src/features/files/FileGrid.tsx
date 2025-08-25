@@ -1,13 +1,13 @@
 // File: src/features/files/FileGrid.tsx
 import React from 'react';
-import { FiFile, FiImage, FiDownload, FiMoreVertical } from 'react-icons/fi';
+import { FiFile, FiImage, FiDownload, FiMoreVertical, FiMusic } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { Button } from '../../components/ui';
-import { FileItem } from './FileDisplay';
 import { formatDate } from '../../utils/time';
+import { IFile } from '../../types/types';
 
 interface FileGridProps {
-  files?: FileItem[];
+  files?: IFile[];
   isLoading: boolean;
 }
 
@@ -16,12 +16,14 @@ const FileGrid: React.FC<FileGridProps> = ({ files = [], isLoading }) => {
   const FileTypeIcons = {
     image: <FiImage className="text-2xl text-purple-600" />,
     document: <FiFile className="text-2xl text-blue-600" />,
+    audio: <FiMusic className="text-2xl text-blue-600" />,
     other: <FiFile className="text-2xl text-gray-600" />,
   };
 
   const FileTypeBadges = {
     image: 'bg-purple-100 text-purple-800',
     document: 'bg-blue-100 text-blue-800',
+    audio: 'bg-cyan-100 text-cyan-800',
     other: 'bg-gray-100 text-gray-800',
   };
 

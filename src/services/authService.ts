@@ -19,12 +19,11 @@ export async function login(username: string, password: string, role: "client" |
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
   
-  setLastLoginRole('client')
+  setLastLoginRole(role)
   const {data: userData} = await api.get(`/auth/user/me`)
 
   if (!userData.success) throw new Error(userData.message);
   
-  setLastLoginRole('support')
   return { userData: userData.user , session: data.session }
 }
 

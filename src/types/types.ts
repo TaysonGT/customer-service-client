@@ -27,24 +27,27 @@ export type IUser = {
   username: string;
   firstname: string;
   lastname: string;
-  role: 'client' | 'support_agent' | 'admin';
   email: string;
   gender: string;
   description?: string;
-  password: string;
-  confirmPassword: string;
+  password?: string;
+  confirmPassword?: string;
   categoryId: string;
   supportId: string;
   phone: string;
-  last_seen_at: string;
+  lastSeenAt: string;
   avatarUrl?: string;
   countryCode?: string;
-    company?: string;
+  clientProfile?: ClientProfile,
+  adminProfile?: AdminProfile
+}
+
+export type ClientProfile = {
+  company?: string;
   jobTitle?: string;
   clientType?: 'individual' | 'business';
   status?: 'prospect' | 'active' | 'inactive' | 'vip';
   leadSource?: string;
-  
   // Address
   address?: {
     street?: string;
@@ -71,20 +74,30 @@ export type IUser = {
     };
   };
 }
+export type AdminProfile = {
+  role: AdminRole;
+  status: AdminStatus;
+  title: string;
+  permissions: { [key: string]: boolean }; // JSON string of specific permissions
+  canManageAdmins?: boolean;
+  createdBy?: IUser;
+}
 
 export type TicketType = {
-    id: string;
-    subject: string;
-    status: string;
-    priority: string;
-    createdAt: string;
-    updatedAt: string;
-    description: string;
-    category: string;
-    attachments: Partial<IFile>[];
-    requester: Partial<IUser>;
-    assignee: Partial<IUser>|null;
-    resolvedAt: string|null;
+  id: string;
+  subject: string;
+  description: string;
+  status: TicketStatus
+  priority: TicketPriority
+  chat?: IChat;
+  createdAt: string;
+  updatedAt: string;
+  category: string;
+  attachments: IFile[];
+  requester: IUser;
+  assignee?: IUser;
+  isUrgent: boolean;
+  resolvedAt?: string;
 }
 
 export interface IChat {
@@ -92,9 +105,8 @@ export interface IChat {
   title: string;
   description: string;
   ended: boolean;
-  participants: IUser[];
+  users: IUser[];
   lastMessage?: IChatMessage;
-  client: IUser;
   startedAt: string;
   updatedAt: string;
   unread_messages: IChatMessage[];
@@ -119,6 +131,7 @@ export enum TicketPriority {
 }
 
 export interface IFile {
+  id: string;
   path: string;
   bucket: string;
   name: string;
@@ -127,15 +140,16 @@ export interface IFile {
   meta?: { duration?: number; width?: number; height?: number };
   client_id?: string;
   message_id?: string;
+  uploaded_at: string;
 }
 
 export interface IChatMessage {
-  id: string;               // Real UUID from database
-  localId?: string;         // Only for optimistic messages (client-side only)
+  id: string;
+  localId?: string;
   chatId: string;
   type: IMessageType;
   senderId: string;
-  senderType: 'client' | 'support_agent';
+  senderType: 'client' | 'admin';
   content: string;
   createdAt: string;
   file?: IFile,
@@ -145,7 +159,7 @@ export interface IChatMessage {
 
 export interface IMessageGroup {
   senderId: string;
-  senderType: 'client' | 'support_agent';
+  senderType: 'client' | 'admin';
   messages: IChatMessage[];
   showHeader: boolean;
   timestamp: string;
@@ -158,5 +172,21 @@ export interface ICurrentUser {
   lastname: string;
   email: string;
   avatarUrl?: string
-  role: 'client' | 'support_agent' | 'admin';
+  role: UserRole;
+}
+
+export enum AdminRole {
+  SUPER_ADMIN = 'super_admin',
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  SUPPORT = 'support',
+  CONTENT_MANAGER = 'content_manager'
+}
+
+export type UserRole = typeof AdminRole[keyof typeof AdminRole] | 'client';
+
+export enum AdminStatus {
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  PENDING = 'pending',
 }

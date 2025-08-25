@@ -16,45 +16,70 @@ import { FaServicestack } from 'react-icons/fa';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { motion, AnimatePresence } from 'framer-motion';
 import {Avatar} from '../ui';
+import { FiHelpCircle, FiArchive, FiInbox, FiMessageSquare, FiSettings, FiUsers } from 'react-icons/fi';
 
-const links = [
+const otherLinks = [
   {
     name: "Dashboard",
-    path: "/",
+    path: "/support",
     icon: <RiHomeOfficeFill/>
   },
   {
     name: "My Data",
-    path: "/my-data",
+    path: "/support/my-data",
     icon: <RiDatabase2Line/>
   },
   {
     name: "Agents",
-    path: "/agents",
+    path: "/support/agents",
     icon: <RiCustomerServiceFill/>
   },
   {
     name: "Customers",
-    path: "/customers",
+    path: "/support/customers",
     icon: <MdPerson2/>,
   },
   {
     name: "Sections",
-    path: "/sections",
+    path: "/support/sections",
     icon: <RiToolsFill/>
   },
   {
     name: "Reports",
-    path: "/reports",
+    path: "/support/reports",
     icon: <RiFeedbackFill/>
   },
 ]
+
+const supportLinks = [
+    {
+        path: '/support/chats',
+        name: 'Chats',
+        icon: <FiMessageSquare />,
+    },
+    {
+        path: '/support/tickets',
+        name: 'Tickets',
+        icon: <FiInbox />,
+    },
+    {
+        path: '/support/clients',
+        name: 'Clients',
+        icon: <FiUsers />,
+    },
+    {
+        path: '/support/knowledge',
+        name: 'Knowledge Base',
+        icon: <FiHelpCircle />,
+    },
+  ]
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logoutUser: logout } = useAuth();
   const [expand, setExpand] = useState<boolean>(false);
+  const [links, setLinks] = useState<typeof supportLinks>(currentUser?.role==='support'? supportLinks: otherLinks);
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
   const showBtnRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -66,7 +91,7 @@ const Sidebar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate('/auth/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -111,7 +136,7 @@ const Sidebar: React.FC = () => {
             className={`
               relative select-none z-[9] cursor-pointer py-2 
               rounded-lg group/secondary 
-              ${location.pathname === link.path ? 'bg-blue-50 text-accent' : 'hover:bg-gray-50'}
+              ${location.pathname.includes(link.path.replace('/support/','')) ? 'bg-blue-50 text-accent' : 'hover:bg-gray-50'}
             `}
           >
             <Link 
@@ -121,7 +146,7 @@ const Sidebar: React.FC = () => {
               <div className={`
                 w-10 flex items-center justify-center shrink-0
                 text-xl duration-100 mx-1 aspect-square rounded-lg
-                ${location.pathname === link.path ? 'bg-accent text-white' : 'text-gray-600 group-hover/secondary:text-accent'}
+                ${location.pathname.includes(link.path.replace('/support/','')) ? 'bg-accent text-white' : 'text-gray-600 group-hover/secondary:text-accent'}
               `}>
                 {link.icon}
               </div>
@@ -171,7 +196,7 @@ const Sidebar: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute left-0 bottom-full mb-2 w-full bg-white rounded-lg shadow-md border border-gray-200 z-10 overflow-hidden"
+                className="absolute left-0 bottom-full mb-2 bg-white rounded-lg shadow-md border border-gray-200 z-10"
               >
                 <Link
                   to="/settings"

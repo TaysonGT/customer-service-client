@@ -4,12 +4,20 @@ import './App.css'
 import { AuthProvider } from './context/AuthContext';
 import AuthRoutes from './routes/AuthRoutes';
 import ProtectedRoutes from './routes/ProtectedRoutes';
-import HomePage from './pages/Home/update';
+import HomePage from './pages/CRM/update';
 import LoginClientPage from './pages/Auth/Client';
 import LoginAgentPage from './pages/Auth/Agent';
 import DataManagementPage from './pages/DataManagement';
 import NewClientPage from './pages/NewClient';
 import AdminDashboard from './pages/AdminDashboard';
+import ClientPortal from './pages/ClientPortal';
+import NotFoundPage from './pages/404/NotFoundPage';
+import TicketOverview from './features/tickets/TicketOverview';
+import RedirectRoute from './routes/RedirectRoute';
+import ChatSector from './pages/CRM/ChatSector';
+import ClientSector from './pages/CRM/ClientSector';
+import TicketSector from './pages/CRM/TicketSector';
+import KnowledgeSector from './pages/CRM/KnowledgeSector';
 
 function App() {
   return (
@@ -20,16 +28,28 @@ function App() {
         { zIndex: 9999, marginTop: '80px', userSelect: "none"} 
       }/>
         <Routes>
-          <Route path='/' element={<ProtectedRoutes roles={['admin', 'support', 'client']}/>}>
-            <Route index path='/' element={<AdminDashboard />}/>
-            <Route index path='/agents' element={<HomePage />}/>
-            <Route index path='/my-data' element={<DataManagementPage />}/>
-            <Route index path='/new-client' element={<NewClientPage />}/>
+          <Route path='/' element={<RedirectRoute />} />
+          <Route path='/support' element={<ProtectedRoutes roles={['admin', 'support', 'client']}/>}>
+            <Route index element={<AdminDashboard />}/>
+            <Route path='/support/chats' element={<ChatSector />}/>
+            <Route path='/support/tickets' element={<TicketSector/>}/>
+            <Route path='/support/clients' element={<ClientSector />}/>
+            <Route path='/support/knowledge' element={<KnowledgeSector />}/>
+            <Route path='/support/agents' element={<HomePage />}/>
+            <Route path='/support/my-data' element={<DataManagementPage />}/>
+            <Route path='/support/new-client' element={<NewClientPage />}/>
+          </Route>
+          <Route path='/client' element={<ProtectedRoutes roles={['client']}/>}>
+            <Route index element={<ClientPortal />}/>
+          </Route>
+          <Route path='/tickets' element={<ProtectedRoutes roles={['admin', 'support', 'client']}/>}>
+            <Route path='/tickets/:ticketId' element={<TicketOverview withHeader/>}/>
           </Route>
           <Route path='/auth' element={<AuthRoutes/>}>
             <Route index path='/auth/login/client' element={<LoginClientPage />}/>
             <Route path='/auth/login/support' element={<LoginAgentPage />}/>
           </Route>
+          <Route path='*' element={<NotFoundPage />}/>
         </Routes>
       </BrowserRouter>
       </AuthProvider>

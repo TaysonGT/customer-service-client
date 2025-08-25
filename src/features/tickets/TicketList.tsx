@@ -10,7 +10,7 @@ interface TicketListProps {
 const TicketList: React.FC<TicketListProps> = ({ tickets, onSelect, selectedTicketId }) => {
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="divide-y divide-gray-200 bg-white h-full">
       {tickets?.map(ticket => (
         <TicketListItem key={ticket.id} {...{ticket, onSelect, selectedTicketId}} />
       ))}

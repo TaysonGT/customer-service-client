@@ -44,12 +44,12 @@ const ClientList: React.FC<ClientListProps> = ({ onSelect, showCreate, clients }
                   <div className='flex items-start justify-between w-full'>
                     <p className="font-medium text-gray-900">
                       {client.firstname} {client.lastname}
-                      {client.status === 'vip' && (
+                      {client.clientProfile?.status === 'vip' && (
                         <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">VIP</span>
                       )}
                     </p>
                     <div className="flex items-center shrink-0">
-                      {client.status === 'active' ? (
+                      {client.clientProfile?.status === 'active' ? (
                         <span className="inline-flex items-center gap-1 text-green-600">
                           <FiCheckCircle />
                           <span className="text-xs">Active</span>
@@ -66,15 +66,15 @@ const ClientList: React.FC<ClientListProps> = ({ onSelect, showCreate, clients }
                 </div>
               </div>
             </div>
-            {client.company && (
+            {client.clientProfile?.company && (
               <div className="mt-1">
                 <span className="text-xs text-gray-500">Company:</span>
-                <span className="text-xs font-medium text-gray-700 ml-1">{client.company}</span>
+                <span className="text-xs font-medium text-gray-700 ml-1">{client.clientProfile.company}</span>
               </div>
             )}
             <div className="flex justify-between mt-2">
               <span className="text-xs text-gray-500">Last activity:</span>
-              <span className="text-xs font-medium text-gray-700">{formatDate(client.last_seen_at, {withTime:true})}</span>
+              <span className="text-xs font-medium text-gray-700">{formatDate(client.lastSeenAt, {withTime:true})}</span>
             </div>
           </div>
         ))}

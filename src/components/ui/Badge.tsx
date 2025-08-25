@@ -1,7 +1,7 @@
 // File: src/components/ui/Badge.tsx
 import React from 'react';
 
-type BadgeVariant = 
+export type BadgeVariant = 
   | 'default' 
   | 'primary' 
   | 'success' 

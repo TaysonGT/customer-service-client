@@ -4,7 +4,8 @@ import {
   FiUser, FiMail, FiPhone, 
   FiClock, FiTag, FiPaperclip 
 } from 'react-icons/fi';
-import { TicketPriority, TicketStatus, TicketType } from '../../types/types';
+import { IFile, TicketPriority, TicketStatus, TicketType } from '../../types/types';
+import { AttachmentList } from './AttachmentList';
 
 interface TicketDetailsProps {
   ticket: TicketType;
@@ -15,6 +16,7 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onUpdate }) => {
   const [message, setMessage] = useState('');
   const [currentStatus, setCurrentStatus] = useState(ticket.status);
   const [currentPriority, setCurrentPriority] = useState(ticket.priority);
+  const [attachments, setAttachments] = useState<IFile[]>([]);
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as TicketStatus;
@@ -162,21 +164,8 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onUpdate }) => {
                 )}
               </div>
             </div>
-
             <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <h3 className="font-medium mb-2">Attachments</h3>
-              {ticket.attachments && ticket.attachments.length > 0 ? (
-                <div className="space-y-2">
-                  {ticket.attachments.map((attachment, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded">
-                      <FiPaperclip className="text-gray-400" />
-                      <span className="text-sm">{attachment.name}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No attachments</p>
-              )}
+              <AttachmentList {...{ticketId: ticket.id}}/>
             </div>
           </div>
         </div>
