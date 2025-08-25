@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, StatusBadge, Button, UserInfo } from '../../components/ui';
 import { ChatStatus } from '../../features/chat/ChatStatus';
@@ -174,7 +174,7 @@ const mockTicket: TicketType = {
         id: 'msg-003',
         content: 'Any updates on the fix?',
         type: 'text',
-        senderType: 'client',
+        
         senderId: 'user-001',
         chatId: 'chat-001',
         status: 'delivered',
@@ -185,7 +185,7 @@ const mockTicket: TicketType = {
       id: 'msg-003',
       content: 'Any updates on the fix?',
       type: 'text',
-      senderType: 'client',
+      
       senderId: 'user-001',
       chatId: 'chat-001',
       status: 'delivered',

@@ -28,7 +28,6 @@ const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void
   const { groups, sendMessage, participants, loadMore, hasMore, isLoading } = useChatMessages({ chatId: chat.id });
   const { typingUsers, setTyping } = useTypingStatus(chat.id, {
     id: currentUser!.id,
-    role: currentUser!.role === 'client' ? 'client' : 'support_agent'
   });
   const timeoutRef = useRef<NodeJS.Timeout>(null);
 
@@ -184,7 +183,7 @@ const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void
         </AnimatePresence>
 
         <MessageInput
-          onSend={({content, type, meta, file}) => sendMessage({content, type, messagesEndRef, meta, file})}
+          onSend={({content, type, meta}) => sendMessage({content, type, messagesEndRef, meta})}
           handleTyping={handleTyping}
           setShowEmoji={setShowEmoji}
           showEmoji={showEmoji}

@@ -263,7 +263,7 @@ const ChatHeader: React.FC<Props> = memo(({
                           <Avatar src={participant.avatarUrl} alt={participant.firstname} size="sm" />
                           <div>
                             <p className="font-medium text-gray-900">{participant.firstname} {participant.lastname}</p>
-                            <p className="text-xs text-gray-500">{participant.role === 'client' ? 'Customer' : 'Support Agent'}</p>
+                            <p className="text-xs text-gray-500">{participant.clientProfile ? 'Customer' : 'Support Agent'}</p>
                           </div>
                         </div>
                       ))}

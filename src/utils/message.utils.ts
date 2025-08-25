@@ -15,7 +15,6 @@ export function groupMessages(
   function createNewGroup(message: IChatMessage, sender: IUser): IMessageGroup {
     return {
       senderId: message.senderId,
-      senderType: message.senderType,
       messages: [message],
       showHeader: true,
       timestamp: message.createdAt,

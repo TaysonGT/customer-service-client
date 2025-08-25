@@ -58,6 +58,16 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
     })));
   }, []);
 
+  const markMessagesAsSeen = async () => {
+    if (updatesOnly) return;
+    await supabase
+      .from('chat_messages')
+      .update({ status: 'seen' })
+      .eq('chatId', chatId)
+      .neq('status', 'seen')
+      .select();
+  };
+
   // Message loading
   const loadMessages = useCallback(async () => {
     setIsLoading(true);
@@ -121,17 +131,18 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
       localId,
       content,
       file: type !== 'text' ? {
+        id: `f-${localId}`,
         bucket: '',
         path: content,
         name: meta?.name || '',
         type: type as 'audio' | 'image' | 'document',
         size: meta?.size || 0,
+        uploaded_at: new Date().toISOString(),
         meta
       } : undefined,
       type,
       chatId,
       senderId: currentUser!.id,
-      senderType: user.role as 'client' | 'support_agent',
       createdAt: new Date().toISOString(),
       status: 'sending'
     };
@@ -188,7 +199,6 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
           chatId,
           type,
           senderId: currentUser!.id,
-          senderType: currentUser!.role,
           status: 'delivered',
           ...(type !== 'text' && { file_id: provisionalDbId })
         })
@@ -216,20 +226,13 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
 
     playSound();
 
-    if (!updatesOnly) {
-      await supabase
-        .from('chat_messages')
-        .update({ status: 'seen' })
-        .eq('chatId', chatId)
-        .neq('status', 'seen')
-        .select();
-    }
+    if (!updatesOnly) await markMessagesAsSeen()
     
     if (updatesOnly && chat) {
       if(newMessage.senderId !== currentUser?.id) setUnreadMessages(prev => [...prev, newMessage]);
       return setGroups(groupMessages(
         [newMessage],
-        chat.participants
+        chat.users
       ));
     }
     
@@ -249,7 +252,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
 
   // Effects
   useEffect(() => {
-    if ((updatesOnly && !chat?.participants?.length) || 
+    if ((updatesOnly && !chat?.users?.length) || 
         (!updatesOnly && participants.length < 1)) {
       return;
     }
@@ -291,7 +294,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
   useEffect(() => {
     const reset = async () => {
       setGroups(updatesOnly && chat ? 
-        (chat.lastMessage ? groupMessages([chat.lastMessage], chat.participants) : []) 
+        (chat.lastMessage ? groupMessages([chat.lastMessage], chat.users) : []) 
         : []);
       setCursor(null);
       setParticipants([]);
@@ -299,21 +302,11 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
       initialLoadRef.current = true;
     };
 
-    const markMessagesAsSeen = async () => {
-      if (updatesOnly) return;
-      await supabase
-        .from('chat_messages')
-        .update({ status: 'seen' })
-        .eq('chatId', chatId)
-        .neq('status', 'seen')
-        .select();
-    };
-
     reset().then(() => {
       if (updatesOnly) {
         setIsLoading(false);
       } else {
-        loadMessages().then(()=>markMessagesAsSeen());
+        loadMessages().then(()=>chat?.unread_messages&& markMessagesAsSeen());
       }
     });
   }, [chatId, updatesOnly, chat]);

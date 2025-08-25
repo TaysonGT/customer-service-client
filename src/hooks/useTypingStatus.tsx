@@ -1,8 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import supabase from '../lib/supabase';
-import { ICurrentUser } from '../types/types';
+import { IChat, ICurrentUser } from '../types/types';
 
 export type TypingUser =  Omit<ICurrentUser, 'email'|'firstname'|'lastname'|'role'>;
+
+export const getTypingText = (typingUsers: TypingUser[], chat: IChat) => {
+    if (typingUsers.length === 0) return null;
+    if (typingUsers.length === 1) {
+      const user = chat.users.find(p => p.id === typingUsers[0].id);
+      return `${user?.firstname} is typing...`;
+    }
+    if (typingUsers.length === 2) {
+      const names = typingUsers.map(user => 
+        chat.users.find(p => p.id === user.id)?.firstname
+      ).join(' and ');
+      return `${names} are typing...`;
+    }
+    const names = typingUsers.slice(0, 2).map(user => 
+      chat.users.find(p => p.id === user.id)?.firstname
+    ).join(', ');
+    return `${names} and ${typingUsers.length - 2} others are typing...`;
+  };
 
 export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, updatesOnly:boolean = false) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
@@ -20,7 +38,7 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
           is_typing: isTyping,
           last_updated: new Date().toISOString()
         },
-        { onConflict: 'chat_id , user_id, user_role' }
+        { onConflict: 'chat_id , user_id' }
       );
   };
 
@@ -77,7 +95,6 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
       )
       .subscribe();
 
-    // Cleanup stale status every 5 seconds
     return () => {
       supabase    
       .from('typing_status')
@@ -86,7 +103,7 @@ export const useTypingStatus = (chatId: string, currentUser: TypingUser|null, up
       supabase.removeChannel(channel);
 
       Object.values(typingTimeoutRef.current).forEach(clearTimeout);
-      setTyping(false); // Clear status on unmount
+      setTyping(false);
     };
   }, [chatId, currentUser?.id]);
 

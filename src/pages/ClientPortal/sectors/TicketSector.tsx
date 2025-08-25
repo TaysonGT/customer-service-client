@@ -81,7 +81,7 @@ const TicketSector:React.FC<Props> = ({tickets, onAction, isLoading}) => {
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {ticket.subject}
                       </p>
-                      {ticket.chat && ticket.chat.unread_messages.length > 0 && (
+                      {ticket.chat?.unread_messages && ticket.chat.unread_messages.length > 0 && (
                         <Badge variant="primary" className="ml-2">
                           {ticket.chat?.unread_messages.length} new
                         </Badge>

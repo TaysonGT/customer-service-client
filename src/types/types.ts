@@ -138,7 +138,7 @@ export interface IFile {
   type: 'audio'|'image'|'document';
   size: number;
   meta?: { duration?: number; width?: number; height?: number };
-  client_id?: string;
+  user_id?: string;
   message_id?: string;
   uploaded_at: string;
 }
@@ -146,10 +146,11 @@ export interface IFile {
 export interface IChatMessage {
   id: string;
   localId?: string;
-  chatId: string;
   type: IMessageType;
+  chat?: IChat;
+  sender?: IUser;
+  chatId: string;
   senderId: string;
-  senderType: 'client' | 'admin';
   content: string;
   createdAt: string;
   file?: IFile,
@@ -159,7 +160,6 @@ export interface IChatMessage {
 
 export interface IMessageGroup {
   senderId: string;
-  senderType: 'client' | 'admin';
   messages: IChatMessage[];
   showHeader: boolean;
   timestamp: string;

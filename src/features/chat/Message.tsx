@@ -1,4 +1,4 @@
-import { MdCheck, MdOutlineTimelapse } from 'react-icons/md';
+import { MdCheck } from 'react-icons/md';
 import { IChatMessage } from '../../types/types';
 import { RiCheckDoubleFill, RiErrorWarningFill } from 'react-icons/ri';
 import { FaDownload, FaFileAlt } from 'react-icons/fa';

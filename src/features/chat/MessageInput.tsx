@@ -13,7 +13,7 @@ const MessageInput = memo(({
   className = '',
   handleTyping
 }: { 
-  onSend: ({content, type, meta, file}: {content: string, type: IMessageType, file?: File, meta?:{duration?: number, height?:number, width?:number, name?: string, size?: number, type?: string}}) => void;
+  onSend: ({content, type, meta}: {content: string, type: IMessageType, meta?:{duration?: number, height?:number, width?:number, name?: string, size?: number, type?: string}}) => void;
   showEmoji: boolean;
   setShowEmoji: (show: boolean) => void;
   handleTyping: () => void;

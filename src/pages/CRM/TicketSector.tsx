@@ -50,7 +50,6 @@ import { Button, Modal } from '../../components/ui';
             chatId: 'chat-001',
             type: 'text',
             senderId: 'user-001',
-            senderType: 'client',
             content: 'Any updates?',
             createdAt: '2024-01-15T14:40:00Z',
             status: 'delivered'

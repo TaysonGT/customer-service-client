@@ -4,7 +4,7 @@ import { TooltipText } from '../../components/TooltipText';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useChatMessages } from '../../hooks/useChatMessages';
-import { useTypingStatus } from '../../hooks/useTypingStatus';
+import { getTypingText, useTypingStatus } from '../../hooks/useTypingStatus';
 import { motion } from 'framer-motion';
 import { Avatar } from '../../components/ui';
 
@@ -23,24 +23,6 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
   const { lastMessage, isLoading, unreadMessages } = useChatMessages({chatId:chat.id, updatesOnly:true, chat})
   const { typingUsers } = useTypingStatus(chat.id, currentUser, true)
 
-  const getTypingText = () => {
-    if (typingUsers.length === 0) return null;
-    if (typingUsers.length === 1) {
-      const user = chat.users.find(p => p.id === typingUsers[0].id);
-      return `${user?.firstname} is typing...`;
-    }
-    if (typingUsers.length === 2) {
-      const names = typingUsers.map(user => 
-        chat.users.find(p => p.id === user.id)?.firstname
-      ).join(' and ');
-      return `${names} are typing...`;
-    }
-    const names = typingUsers.slice(0, 2).map(user => 
-      chat.users.find(p => p.id === user.id)?.firstname
-    ).join(', ');
-    return `${names} and ${typingUsers.length - 2} others are typing...`;
-  };
-
   const handleMouseEnter = () => {
     if(textRef.current){
       const rect = textRef.current.getBoundingClientRect();
@@ -57,14 +39,14 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
   };
 
   useEffect(()=>{
-    lastMessage&&
     setLastVisibleText(()=>{
-      return lastMessage.senderId==currentUser?.id?
+      return lastMessage?
+      lastMessage.senderId==currentUser?.id?
       `You:
       ${lastMessage.content}`
       :`${lastMessage.content}`
-    }
-    )
+      : 'Start Chatting Now'
+    })
 
   },[lastMessage])
 
@@ -187,7 +169,7 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
                     <span className="inline-block w-1 h-1 rounded-full bg-blue-500 animate-bounce" 
                       style={{ animationDelay: '300ms' }} />
                   </span>
-                  <span className='text-sm text-gray-600'>{getTypingText()}</span>
+                  <span className='text-sm text-gray-600'>{getTypingText(typingUsers, chat)}</span>
                 </motion.div>
               ) : lastMessage ? (
                 <p className="text-sm truncate text-gray-600 grow">
