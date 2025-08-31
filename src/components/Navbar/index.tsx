@@ -4,7 +4,7 @@ import { FaRegUserCircle } from "react-icons/fa"
 import { useRef, useState } from "react"
 import { useOutsideClick } from "../../hooks/useOutsideClick"
 import { useAuth } from "../../context/AuthContext"
-import { useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router"
 
 const Navbar = () => {
     const [showDrop, setShowDrop] = useState<boolean>(false)
@@ -48,14 +48,19 @@ const Navbar = () => {
 
                     <div className={`absolute z-1000 overflow-hidden rounded-lg p-2 border-gray-200 border scale-y-95 opacity-0 top-[80%] left-1/2 -translate-x-1/2 bg-white text-black shadow-lg text-sm duration-200 ${showDrop? 'pointer-events-auto opacity-100 top-[100%] scale-y-100 origin-top':'pointer-events-none'} `}>
                         <div ref={dropDownRef} className='flex flex-col w-40 text-nowrap text-xs text-gray-700'>
-                            <div className='flex items-center gap-2 rounded-lg p-2 px-4 cursor-pointer duration-75 hover:bg-gray-50'>
+                            <Link to={`/profile/${currentUser?.id}`}
+                            onClick={()=>setShowDrop(false)}
+                            className='flex items-center gap-2 rounded-lg p-2 px-4 cursor-pointer duration-75 hover:bg-gray-50'>
                                 <FaRegUserCircle className='text-lg'/> Profile
-                            </div>
-                            <div className='flex items-center gap-2 rounded-lg p-2 px-4 cursor-pointer duration-75 hover:bg-gray-50'>
+                            </Link>
+                            <Link to={'#'} 
+                            onClick={()=>setShowDrop(false)}
+                            className='flex items-center gap-2 rounded-lg p-2 px-4 cursor-pointer duration-75 hover:bg-gray-50'>
                                 <MdSettings className='text-lg'/> Settings
-                            </div>
+                            </Link>
                             <div onClick={async()=>{
                                 await logoutUser()
+                                setShowDrop(false)
                                 nav('/')
                             }} className='flex items-center gap-2 rounded-lg p-2 px-4 cursor-pointer text-red-500 duration-75 hover:bg-gray-100'>
                                 <RiLogoutCircleRLine className='text-lg'/> Logout

@@ -12,14 +12,17 @@ import { useAuth } from '../../context/AuthContext';
 
 interface AttachmentListProps {
   className?: string;
+  showAddAttachment: boolean;
+  onClose: ()=>void;
   ticketId: string;
 }
 
 export const AttachmentList: React.FC<AttachmentListProps> = ({
   className = '',
-  ticketId
+  ticketId,
+  showAddAttachment,
+  onClose
 }) => {
-  const [showAddAttachment, setShowAddAttachment] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [attachments, setAttachments] = useState<IFile[]>([])
@@ -94,7 +97,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
           !data.success&& toast.error(data.message)
         )
       }
-      setShowAddAttachment(false)
+      onClose()
       toast.success('Files uploaded successfully!')
       refetch()
     } catch (error: any) {
@@ -127,14 +130,10 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
 
   return (
     <div className={className}>
-      <div className='flex justify-between items-center w-full mb-2'>
-        <h3 className="text-sm font-medium text-gray-900">Attachments</h3>
-        <Button 
-        onClick={()=>setShowAddAttachment(true)}
-        variant="outline" size='sm'>
-          Add
-        </Button>
-      </div>
+      {/* <div className='flex justify-between items-center w-full mb-2'> */}
+        {/* <h3 className="text-sm font-medium text-gray-900">Attachments</h3> */}
+        
+      {/* </div> */}
       {isLoading?
         <div className='w-full relative flex items-center justify-center py-2'>
           <Loader size={30} thickness={6} />
@@ -165,10 +164,10 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
       {/* <FileTable {...{ files: attachments, isLoading: false }} /> */}
       {showAddAttachment&&
       <>
-        <Modal {...{isOpen: showAddAttachment, onClose: ()=>setShowAddAttachment(false), title: 'Add Attachment'}} size='md'>
+        <Modal {...{isOpen: showAddAttachment, onClose, title: 'Add Attachment'}} size='md'>
           <FileUploadWithPreview {...{onFilesChange: (files)=>setUploadFiles(files)}} />
           <div className='flex mt-4 gap-4'>
-            <Button variant='outline' size='sm' fullWidth onClick={()=>setShowAddAttachment(false)}>
+            <Button variant='outline' size='sm' fullWidth onClick={onClose}>
               Cancel
             </Button>
             <Button variant='primary' size='sm' fullWidth disabled={isUploading} onClick={handleUpload}>

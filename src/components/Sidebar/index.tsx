@@ -16,7 +16,7 @@ import { FaServicestack } from 'react-icons/fa';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { motion, AnimatePresence } from 'framer-motion';
 import {Avatar} from '../ui';
-import { FiHelpCircle, FiArchive, FiInbox, FiMessageSquare, FiSettings, FiUsers } from 'react-icons/fi';
+import { FiHelpCircle, FiInbox, FiMessageSquare, FiUsers } from 'react-icons/fi';
 
 const otherLinks = [
   {
@@ -156,7 +156,7 @@ const Sidebar: React.FC = () => {
                 animate={{ opacity: expand ? 1 : 0, width: expand ? 'auto' : 0 }}
                 className="overflow-hidden"
               >
-                <p className='ml-2 text-gray-700 font-medium'>{link.name}</p>
+                <p className='ml-2 text-gray-700 font-medium text-nowrap'>{link.name}</p>
               </motion.div>
             </Link>
           </motion.li>

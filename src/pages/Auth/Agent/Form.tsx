@@ -81,7 +81,7 @@ const Form = () => {
       </div>
       
       <button 
-        type="submit" 
+        type="submit"
         disabled={isSubmitting}
         className="w-full text-sm bg-accent hover:bg-[#6ea6ff] disabled:bg-[#b7d2ff] duration-150 cursor-pointer text-white p-2 lg:p-3 rounded lg:rounded-4xl disabled:opacity-50"
       >

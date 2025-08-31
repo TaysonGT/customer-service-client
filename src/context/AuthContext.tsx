@@ -3,7 +3,6 @@ import { IAuthContext, ICurrentUser } from '../types/types';
 import supabase from '../lib/supabase';
 import { login, logout } from '../services/authService';
 import { createAxiosAuthInstance } from '../services/axiosAuth';
-import toast from 'react-hot-toast';
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
@@ -24,8 +23,6 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     await login(email, password, role)
     .then(({userData})=>{
       setCurrentUser(userData||null)
-    }).catch((error)=>{
-      toast.error(error.message)
     })
   };
 
@@ -46,15 +43,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
   const updateLastSeen = async () => {
     if(!currentUser || currentUser?.role === 'admin') return;
 
-    await supabase
-      .from('users')
-      .update({ lastSeenAt: new Date().toISOString() })
-      .eq('id', currentUser?.id)
-      // .select()
-      // .then(({data, error})=>{
-      //   console.log(data)
-      //   console.log(error)
-      // })
+    await api.patch('/auth/seen')
+    .then(({data})=>console.log(data))
   };
 
   // Example: Update on mount and every 30 seconds
@@ -63,7 +53,6 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
   },[])
 
   useEffect(()=>{
-    
     updateLastSeen();
     const interval = setInterval(updateLastSeen, 30000);
     return () => clearInterval(interval);

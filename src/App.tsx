@@ -4,7 +4,6 @@ import './App.css'
 import { AuthProvider } from './context/AuthContext';
 import AuthRoutes from './routes/AuthRoutes';
 import ProtectedRoutes from './routes/ProtectedRoutes';
-import CRMPage from './pages/CRM';
 import LoginClientPage from './pages/Auth/Client';
 import LoginAgentPage from './pages/Auth/Agent';
 import DataManagementPage from './pages/DataManagement';
@@ -41,7 +40,6 @@ function App() {
             <Route path='/support/tickets' element={<TicketSector/>}/>
             <Route path='/support/clients' element={<ClientSector />}/>
             <Route path='/support/knowledge' element={<KnowledgeSector />}/>
-            <Route path='/support/agents' element={<CRMPage />}/>
             <Route path='/support/my-data' element={<DataManagementPage />}/>
             <Route path='/support/new-client' element={<NewClientPage />}/>
           </Route>

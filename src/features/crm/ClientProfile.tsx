@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Tabs, Tab, Badge, Button, Avatar } from '../../components/ui';
 import { 
   FiUser, FiCreditCard, FiClock, FiShoppingBag, 

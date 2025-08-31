@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
 export const useOutsideClick = (
-  ref: React.RefObject<HTMLElement|null>,
+  ref: React.RefObject<HTMLElement | null>,
   callback: () => void,
-  excludeRefs: React.RefObject<HTMLElement|null>[] = []
+  excludeRefs: React.RefObject<HTMLElement | null>[] = []
 ) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -20,11 +20,11 @@ export const useOutsideClick = (
       }
     };
 
-    // Use capture phase to handle potential event.stopPropagation()
-    document.addEventListener('mousedown', handleClickOutside, true);
+    // Use bubbling phase instead of capture phase
+    document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [ref, callback, excludeRefs]);
 };
