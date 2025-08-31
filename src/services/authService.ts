@@ -1,5 +1,4 @@
 import supabase from '../lib/supabase';
-import axios from 'axios';
 import { setLastLoginRole } from '../utils/auth.utils';
 import { createAxiosAuthInstance } from './axiosAuth';
 
@@ -10,7 +9,7 @@ export async function login(username: string, password: string, role: "client" |
 
   const api = createAxiosAuthInstance()
 
-  const {data: resolvedData} = await axios.post(`/auth/username-resolve/${role}`, { username })
+  const {data: resolvedData} = await api.post(`/auth/username-resolve/${role}`, { username })
   .catch(error => {throw new Error(error.response?.data?.error || 'Failed to resolve username')});
   
 
