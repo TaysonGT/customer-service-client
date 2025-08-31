@@ -5,7 +5,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig (({mode})=>{
   const env = loadEnv(mode, process.cwd(), '')
-  process.env = {...process.env, ...loadEnv(mode, process.cwd())};
   return{
     plugins: [tailwindcss()],
     // define: {
@@ -14,8 +13,7 @@ export default defineConfig (({mode})=>{
     server: {
       proxy: {
         '/api': {
-          target: 'http://localhost:5000', // Express backend
-          // target: process.env.VITE_BACKEND_URL, // Express backend
+          target: env.NODE_ENV === 'production'? env.VITE_BACKEND_URL: 'http://localhost:5000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         }
