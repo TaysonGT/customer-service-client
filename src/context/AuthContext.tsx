@@ -3,6 +3,7 @@ import { IAuthContext, ICurrentUser } from '../types/types';
 import supabase from '../lib/supabase';
 import { login, logout } from '../services/authService';
 import { createAxiosAuthInstance } from '../services/axiosAuth';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
@@ -44,7 +45,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     if(!currentUser || currentUser?.role === 'admin') return;
 
     await api.patch('/auth/seen')
-    .then(({data})=>console.log(data))
+    .then(({data})=>!data.success&& toast.error(data.message))
   };
 
   // Example: Update on mount and every 30 seconds

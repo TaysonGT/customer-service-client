@@ -6,7 +6,7 @@ export const createAxiosAuthInstance = (options?: {
 }) => {
   const instance = axios.create({
     withCredentials: true,
-    baseURL: '/api',
+    baseURL: import.meta.env.PROD? import.meta.env.VITE_BACKEND_URL : '/api',
   });
 
   // Request interceptor (adds Supabase token)
