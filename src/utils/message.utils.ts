@@ -40,6 +40,7 @@ export function groupMessages(
       currentGroup = createNewGroup(message, sender);
       groups.push(currentGroup);
     } else {
+      currentGroup.timestamp = message.createdAt;
       currentGroup.messages.push(message);
     }
   });

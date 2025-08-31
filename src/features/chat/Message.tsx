@@ -1,11 +1,12 @@
-import { MdCheck } from 'react-icons/md';
+import { MdCheck, MdDelete, MdEdit, MdInfoOutline, MdReply, MdReport } from 'react-icons/md';
 import { IChatMessage } from '../../types/types';
 import { RiCheckDoubleFill, RiErrorWarningFill } from 'react-icons/ri';
 import { FaDownload, FaFileAlt } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import supabase from '../../lib/supabase';
 import AudioPlayer from './VoiceMessage';
 import { FiClock } from 'react-icons/fi';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 const URL_REGEX = /(?:(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z]{2,}){1,}(?:\/[^\s]*)?|(?:[a-z0-9-]+\.(?:com|net|org|io|co|gov|edu|me|ly|app|dev|ai|sh|gl|fm|bit\.ly|mm\.co)[^\s]*))/gi;
 
@@ -26,6 +27,11 @@ const formatFileSize = (bytes: number) => {
 // Memoized Message Component
 const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i }) => {
   const [url, setUrl] = useState<string|null>(null)
+  const [showDrop, setShowDrop] = useState<boolean>(false)
+  const dropDownRef = useRef<HTMLDivElement>(null)
+  const menuBtnRef = useRef<HTMLDivElement>(null)
+
+  useOutsideClick(dropDownRef, ()=>setShowDrop(false), [menuBtnRef])
 
   const messageClass = isCurrentUser
     ? 'bg-[#F4F6F6] mr-auto pl-6'
@@ -168,7 +174,45 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
   };
 
   return (
-    <div className={`p-2 z-0 rounded-md ${messageClass} ${i === 0 && headerClass} relative`}>
+    <div className={`p-2 z-0 rounded-md ${messageClass} ${i === 0 && headerClass} relative`}
+      onDoubleClick={()=> setShowDrop(true)}
+    >
+      <div className={`absolute z-1000 overflow-hidden rounded-lg p-2 border-gray-200 border scale-y-95 opacity-0 bottom-[80%] left-1/2 -translate-x-1/2 bg-white text-black shadow-lg text-sm duration-200 ${showDrop? 'pointer-events-auto opacity-100 bottom-[100%] scale-y-100 origin-bottom':'pointer-events-none'} `}>
+        <div ref={dropDownRef} className='flex flex-col min-w-20 text-nowrap text-xs text-gray-700'>
+          {isCurrentUser?
+          <>
+          <div
+            onClick={()=>setShowDrop(false)}
+            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 hover:bg-gray-50'>
+              <MdEdit className='text-lg'/> Edit
+          </div>        
+          <div
+            onClick={()=>setShowDrop(false)}
+            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 hover:bg-gray-50'>
+              <MdInfoOutline className="text-lg" /> Info
+          </div>        
+          <div
+            onClick={()=>setShowDrop(false)}
+            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 text-red-500 hover:bg-gray-50'>
+              <MdDelete className='text-lg' /> Delete
+          </div>
+          </>
+          :        
+          <>
+            <div
+            onClick={()=>setShowDrop(false)}
+            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 hover:bg-gray-50'>
+                <MdReply className='text-lg' /> Reply
+            </div> 
+            <div
+            onClick={()=>setShowDrop(false)}
+            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 text-red-500 hover:bg-gray-50'>
+                <MdReport className='text-lg' /> Report
+            </div> 
+          </>
+          }       
+        </div>
+      </div>
       {renderMessageContent()}
       {isCurrentUser && (
         message.status === "sending" ?

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import supabase from '../lib/supabase';
-import { IChat, IChatMessage, IMessageGroup, IMessageType, IUser } from '../types/types';
+import { IChat, IChatMessage, IFileMeta, IMessageGroup, IMessageType, IUser } from '../types/types';
 import { useAxiosAuth } from './useAxiosAuth';
 import useSound from 'use-sound';
 import sound from '../assets/audio/message-2.wav';
@@ -36,13 +36,15 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
   }, [groups]);
 
   // Helper functions
-  const getFileBlob = async (blobUrl: string, type: IMessageType) => {
+  const getFileBlob = async (blobUrl: string, type: IMessageType, meta?: IFileMeta) => {
     try {
       const response = await fetch(blobUrl);
-      const audioBlob = await response.blob();
-      const fileName = type === 'audio' ? `audio_${currentUser!.id}_${Date.now()}.wav` : null;
+      const file = await response.blob();
+      const fileName = type === 'audio' ? 
+        `${Date.now()}.wav` 
+        : meta&& `${Date.now()}_${meta.name}`
       
-      return { file: audioBlob, fileName, fileSize: audioBlob.size };
+      return { file, fileName, fileSize: file.size };
     } catch (error) {
       console.error('Supabase upload failed:', error);
       throw error;
@@ -60,13 +62,20 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
 
   const markMessagesAsSeen = async () => {
     if (updatesOnly) return;
-    await supabase
-      .from('chat_messages')
-      .update({ status: 'seen' })
-      .eq('chatId', chatId)
-      .neq('status', 'seen')
-      .select();
+    await api.patch(`/chats/${chatId}/messages/seen`, null, {
+      params: { cursor }
+    })
   };
+
+  const refetchParticipants = async()=>{
+    const {data} = await api.get(`/chats/${chatId}/participants`)
+    setParticipants(prev =>{
+      const idSet = new Set(prev.map(obj => obj.id));
+      const uniqueNewObjects = data.users.filter((obj:IUser) => !idSet.has(obj.id));
+      return [...prev, ...uniqueNewObjects];
+    });
+    return data.users
+  }
 
   // Message loading
   const loadMessages = useCallback(async () => {
@@ -75,15 +84,13 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
       const { data } = await api.get(`/chats/${chatId}/messages`, {
         params: { cursor, limit: 20, initial: !cursor }
       });
-
-      setParticipants(prev => prev.length > 0 ? prev : data.participants);
-      
+      const newParticipants = await refetchParticipants()
       setGroups(prev => {
         const allMessages = cursor 
           ? [...data.messages, ...prev.flatMap(group => group.messages)]
           : data.messages;
-          
-        return groupMessages(allMessages, participants.length ? participants : data.participants);
+        
+        return groupMessages(allMessages, newParticipants);
       });
 
       if (!cursor) initialLoadRef.current = true;
@@ -106,14 +113,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
     content: string;
     type: IMessageType;
     messagesEndRef?: React.RefObject<HTMLDivElement | null>;
-    meta?: {
-      duration?: number;
-      height?: number;
-      width?: number;
-      name?: string;
-      size?: number;
-      type?: string;
-    };
+    meta?: IFileMeta;
   }) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return toast.error('Authentication required');
@@ -129,7 +129,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
     const optimisticMessage: IChatMessage = {
       id: provisionalDbId,
       localId,
-      content,
+      content: type==='text'?content:`${type.slice(0,1).toUpperCase()}${type.slice(1)}`,
       file: type !== 'text' ? {
         id: `f-${localId}`,
         bucket: '',
@@ -157,11 +157,11 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
 
     try {
       let filePath = '';
-      let fileBlob = type !== 'text' ? await getFileBlob(content, type) : null;
+      let fileBlob = type !== 'text' ? await getFileBlob(content, type, meta) : null;
 
       // Handle file upload if needed
       if (fileBlob) {
-        const uploadPath = `${type === 'audio' ? 'audio' : `${type}s`}/${chatId}/${fileBlob.fileName || meta?.name}`;
+        const uploadPath = `${chatId}/${type === 'audio' ? 'audio' : `${type}s`}/${fileBlob.fileName}`;
         const uploadResult = await supabase.storage
           .from('chats_uploads')
           .upload(uploadPath, fileBlob.file);
@@ -171,13 +171,17 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
       }
 
       // Insert file metadata if needed
-      if (type !== 'text') {
-        const { error } = await supabase
-          .from('files_metadata')
-          .insert({
+      const { data: fileData } = await api.post(`/chats/${chatId}/messages`, {
+          id: provisionalDbId,
+          content: type==='text'? content :`${type.slice(0,1).toUpperCase()}${type.slice(1)}`,
+          chatId,
+          type,
+          senderId: currentUser!.id,
+          status: 'delivered',
+          ...(type !== 'text' && {file: {
             path: filePath,
             bucket: 'chats_uploads',
-            name: fileBlob?.fileName || meta!.name,
+            name: fileBlob?.fileName,
             size: fileBlob?.fileSize,
             type,
             meta: {
@@ -185,27 +189,10 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
               height: meta?.height,
               duration: meta?.duration
             },
-          });
+          }})
+        });
 
-        if (error) throw error;
-      }
-
-      // Insert message
-      const { data: message, error: msgError } = await supabase
-        .from('chat_messages')
-        .insert({
-          id: provisionalDbId,
-          content,
-          chatId,
-          type,
-          senderId: currentUser!.id,
-          status: 'delivered',
-          ...(type !== 'text' && { file_id: provisionalDbId })
-        })
-        .select()
-        .single();
-
-      if (msgError) throw msgError;
+      if (!fileData.success) throw fileData.message;
 
       // Update status to delivered
       updateMessageStatus(provisionalDbId, 'delivered');
@@ -225,9 +212,14 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
     if (messageExists|| (newMessage.senderId === currentUser?.id&&!updatesOnly)) return;
 
     playSound();
-
     if (!updatesOnly) await markMessagesAsSeen()
-    
+
+    if(newMessage.file_id) {
+      const {data: fileData} = await api.get(`/chats/files/${newMessage.id}`)
+      if(!fileData.success) return toast.error(fileData.message)
+      newMessage.file = fileData.file
+    }
+
     if (updatesOnly && chat) {
       if(newMessage.senderId !== currentUser?.id) setUnreadMessages(prev => [...prev, newMessage]);
       return setGroups(groupMessages(
@@ -283,7 +275,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
         },
         (payload) => handleSeenUpdate(payload.new as IChatMessage)
       )
-      .subscribe();
+      .subscribe()
 
     return () => {
       supabase.removeChannel(channel);
@@ -306,7 +298,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
       if (updatesOnly) {
         setIsLoading(false);
       } else {
-        loadMessages().then(()=>chat?.unread_messages&& markMessagesAsSeen());
+        loadMessages().then(()=>markMessagesAsSeen());
       }
     });
   }, [chatId, updatesOnly, chat]);

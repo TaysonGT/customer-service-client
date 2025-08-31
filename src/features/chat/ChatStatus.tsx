@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge, Button } from '../../components/ui';
 import { IChat } from '../../types/types';
+import { useNavigate } from 'react-router';
 
 interface ChatStatusProps {
   chat?: IChat;
@@ -13,6 +14,7 @@ export const ChatStatus: React.FC<ChatStatusProps> = ({
   ticketId,
   className = ''
 }) => {
+  const nav = useNavigate()
   const getChatStatusVariant = (status?: IChat['status']) => {
     switch (status) {
       case 'active':
@@ -77,7 +79,7 @@ export const ChatStatus: React.FC<ChatStatusProps> = ({
             variant="outline"
             size="sm"
             fullWidth
-            onClick={() => window.location.href = `/chats/${chat.id}`}
+            onClick={() => nav(`/tickets/${ticketId}/chat`)}
           >
             Go to Chat Room
           </Button>

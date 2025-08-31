@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { IChat } from '../../types/types'
+import { IChat, IUser } from '../../types/types'
 import { TooltipText } from '../../components/TooltipText';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -22,6 +22,8 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
   const {currentUser} = useAuth()
   const { lastMessage, isLoading, unreadMessages } = useChatMessages({chatId:chat.id, updatesOnly:true, chat})
   const { typingUsers } = useTypingStatus(chat.id, currentUser, true)
+  
+  const client:IUser|null = chat.users.find(u=>u.clientProfile)||null
 
   const handleMouseEnter = () => {
     if(textRef.current){
@@ -134,19 +136,21 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
         <div className="flex w-full items-start gap-3">
           <div className="relative h-full aspect-square shrink-0">
             <div className=" h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
-              <Avatar {...{src: chat.users.find(u=>u.clientProfile)?.avatarUrl, alt: chat.users.find(u=>u.clientProfile)?.firstname}} />
+              <Avatar {...{src: client?.avatarUrl, alt: client?.firstname}} />
             </div>
             <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-              chat.status === 'active' ? 'bg-green-500' : 
-              chat.status === 'waiting' ? 'bg-yellow-500' : 'bg-gray-400'
+              // chat.status === 'active' ? 'bg-green-500' : 
+              // chat.status === 'waiting' ? 'bg-yellow-500' : 'bg-gray-400'
+              client? new Date(client.lastSeenAt).getTime() > new Date().getTime() - 5 * 60 *1000 ? 'bg-green-500' :
+              'bg-yellow-500' : 'bg-gray-400'
             }`}></div>
           </div>
           
           <div className='grow min-w-0 space-y-1'>
             <div className="flex items-start justify-between w-full">
               <div className="flex flex-col grow min-w-0">
-                <h3 className="font-medium text-gray-900">{chat.users.find(u=>u.clientProfile)?.firstname} {chat.users.find(u=>u.clientProfile)?.lastname}</h3>
-                <span className="text-xs text-gray-500">{chat.users.find(u=>u.clientProfile)?.email}</span>
+                <h3 className="font-medium text-gray-900">{client?.firstname} {client?.lastname}</h3>
+                <span className="text-xs text-gray-500">{client?.email}</span>
               </div>
               <div className="flex flex-col items-end shrink-0 pl-2">
                 <span className="text-xs text-gray-500 whitespace-nowrap">
@@ -176,7 +180,7 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
                   {lastVisibleText}
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 italic w-full">Start chatting now</p>
+                <p className="text-sm text-gray-400 font-semibold w-full">Start chatting now</p>
               )}
               {unreadMessages.length > 0 && (
                 <span className="h-4 aspect-square rounded-full bg-blue-500 flex items-center shrink-0 justify-center text-white text-xs">

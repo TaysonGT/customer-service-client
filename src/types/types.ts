@@ -137,10 +137,19 @@ export interface IFile {
   name: string;
   type: 'audio'|'image'|'document';
   size: number;
-  meta?: { duration?: number; width?: number; height?: number };
+  meta?: IFileMeta;
   user_id?: string;
   message_id?: string;
   uploaded_at: string;
+}
+
+export interface IFileMeta {
+  duration?: number;
+  height?: number;
+  width?: number;
+  name?: string;
+  size?: number;
+  type?: string;
 }
 
 export interface IChatMessage {
@@ -153,6 +162,7 @@ export interface IChatMessage {
   senderId: string;
   content: string;
   createdAt: string;
+  file_id?: string,
   file?: IFile,
   status: 'sending' | 'delivered' | 'failed' | 'seen';
   updatedAt?: string;

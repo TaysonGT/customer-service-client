@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ChatList from "../../features/chat/ChatList"
 import { IChat } from "../../types/types";
 import ChatBoxFixed from "../../features/chat/ChatBoxFixed";
@@ -6,22 +6,47 @@ import { FaServicestack } from "react-icons/fa";
 import { useAxiosAuth } from "../../hooks/useAxiosAuth";
 import toast from "react-hot-toast";
 import Loader from "../../components/Loader";
+import { useSearchParams } from "react-router";
 
 const ChatSector = ()=>{
+    const [searchParams, setSearchParams] = useSearchParams()
     const [selectedChat, setSelectedChat] = useState<IChat|null>(null);
     const [chats, setChats] = useState<IChat[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const api = useAxiosAuth()
     
+    const refetch = async()=>{
+        setIsLoading(true)
+        await api.get('/chats/me')
+        .then(({data})=>{
+            if(!data.success) return toast.error(data.message)
+            setChats(data.chats)
+        }).catch(()=>toast.error('Error occured when loading chats'))
+        .finally(()=> setIsLoading(false))
+    }
+
     useEffect(()=>{
-    api.get('/chats/me')
-    .then(({data})=>{
-        data.success?
-        setChats(data.chats)
-        :toast.error(data.message)
-    }).catch(()=>toast.error('Error occured when loading chats'))
-    .finally(()=> setIsLoading(false))
+        refetch()
     },[])
+
+    useEffect(()=>{
+        if(selectedChat?.id===searchParams.get('selected')) return;
+
+        if(chats&&searchParams.get('selected')){
+            setSelectedChat(chats.find((chat)=>chat.id===searchParams.get('selected'))||null)
+        }
+    },[searchParams, chats])
+    
+    const updateSelectedChat = useCallback((chat: IChat | null) => {
+        setSelectedChat(chat);
+        const params = new URLSearchParams();
+        if (chat) {
+        params.set('selected', chat.id);
+        } else {
+        params.delete('selected');
+        }
+        setSearchParams(params);
+    }, [setSearchParams]);
 
     return (
         isLoading? (
@@ -33,7 +58,9 @@ const ChatSector = ()=>{
         <>
             <div className="w-full md:w-80 border-r border-gray-200 flex flex-col">
                 <ChatList 
-                    onSelect={setSelectedChat}
+                    onSelect={(chat)=>{
+                        updateSelectedChat(chat)
+                    }}
                     selected={selectedChat}
                     chats={chats}
                 />

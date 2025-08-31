@@ -3,201 +3,19 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, StatusBadge, Button, UserInfo } from '../../components/ui';
 import { ChatStatus } from '../../features/chat/ChatStatus';
 import { AttachmentList } from  '../../features/tickets/AttachmentList';
-import { TicketType, TicketStatus, TicketPriority, AdminProfile, AdminRole, AdminStatus } from '../../types/types';
+import { TicketType, TicketStatus, AdminRole } from '../../types/types';
 import { useAuth } from '../../context/AuthContext';
 import { createAxiosAuthInstance } from '../../services/axiosAuth';
 import Loader from '../../components/Loader';
 import toast from 'react-hot-toast';
 
-const mockTicket: TicketType = {
-  id: '1',
-  subject: 'Website login issues',
-  description: 'Users are unable to login to the website. Getting 500 error when submitting login form. This started happening after the last deployment.',
-  status: TicketStatus.IN_PROGRESS,
-  priority: TicketPriority.HIGH,
-  category: 'Technical Issues',
-  isUrgent: true,
-  createdAt: '2024-01-15T10:30:00Z',
-  updatedAt: '2024-01-15T14:45:00Z',
-  attachments: [
-    {
-      id: '1',
-      path: '/attachments/error-log.txt',
-      bucket: 'tickets',
-      name: 'error-log.txt',
-      type: 'document',
-      size: 1024,
-      uploaded_at: new Date().toDateString()
-    },
-    {
-      id: '2',
-      path: '/attachments/screenshot.png',
-      bucket: 'tickets',
-      name: 'login-error.png',
-      type: 'image',
-      size: 204800,
-      meta: { width: 800, height: 600 },
-      uploaded_at: new Date().toDateString()
-    }
-  ],
-  requester: {
-    id: 'user-001',
-    username: 'johndoe',
-    firstname: 'John',
-    lastname: 'Doe',
-    email: 'john.doe@example.com',
-    gender: 'male',
-    categoryId: 'cat-001',
-    supportId: 'sup-001',
-    phone: '+1234567890',
-    lastSeenAt: '2024-01-15T14:30:00Z',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    countryCode: 'US',
-    clientProfile: {
-      company: 'ABC Corporation',
-      jobTitle: 'IT Manager',
-      clientType: 'business',
-      status: 'active',
-      leadSource: 'website',
-      address: {
-        street: '123 Main St',
-        city: 'New York',
-        state: 'NY',
-        postalCode: '10001',
-        country: 'USA'
-      },
-      socialProfiles: {
-        twitter: 'johndoe',
-        linkedin: 'johndoe'
-      },
-      preferences: {
-        timezone: 'America/New_York',
-        language: 'en',
-        contactMethod: 'email',
-        notificationPreferences: {
-          marketing: false,
-          productUpdates: true
-        }
-      }
-    }
-  },
-  assignee: {
-    id: 'user-002',
-    username: 'janesmith',
-    firstname: 'Jane',
-    lastname: 'Smith',
-    email: 'jane.smith@example.com',
-    gender: 'female',
-    categoryId: 'cat-002',
-    supportId: 'sup-002',
-    phone: '+1987654321',
-    lastSeenAt: '2024-01-15T14:45:00Z',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-    countryCode: 'US',
-    adminProfile: {
-      role: "support",
-      status: 'active',
-      title: 'Senior Support Specialist',
-      permissions: {
-        canManageTickets: true,
-        canAccessChat: true,
-        canViewReports: true
-      },
-      canManageAdmins: false
-    } as AdminProfile
-  },
-  chat: {
-    id: 'chat-001',
-    title: 'Website Login Issues Discussion',
-    description: 'Discussion about the ongoing login issues',
-    ended: false,
-    status: 'active',
-    users: [
-      {
-        id: 'user-001',
-        username: 'johndoe',
-        firstname: 'John',
-        lastname: 'Doe',
-        email: 'john.doe@example.com',
-        gender: 'male',
-        categoryId: 'cat-001',
-        supportId: 'sup-001',
-        phone: '+1234567890',
-        lastSeenAt: '2024-01-15T14:30:00Z',
-        avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        countryCode: 'US',
-        clientProfile: {
-          company: 'ABC Corporation',
-          jobTitle: 'IT Manager',
-          clientType: 'business',
-          status: 'active',
-          leadSource: 'website',
-          address: {
-            street: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            postalCode: '10001',
-            country: 'USA'
-          }
-        }
-      },
-      {
-        id: 'user-002',
-        username: 'janesmith',
-        firstname: 'Jane',
-        lastname: 'Smith',
-        email: 'jane.smith@example.com',
-        gender: 'female',
-        categoryId: 'cat-002',
-        supportId: 'sup-002',
-        phone: '+1987654321',
-        lastSeenAt: '2024-01-15T14:45:00Z',
-        avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-        countryCode: 'US',
-        adminProfile: {
-          role: "support" as AdminRole,
-          status: 'active' as AdminStatus,
-          title: 'Senior Support Specialist',
-          permissions: {
-            canManageTickets: true,
-            canAccessChat: true,
-            canViewReports: true
-          },
-          canManageAdmins: false
-        }
-      }
-    ],
-    startedAt: '2024-01-15T10:35:00Z',
-    updatedAt: '2024-01-15T14:40:00Z',
-    unread_messages: [
-      {
-        id: 'msg-003',
-        content: 'Any updates on the fix?',
-        type: 'text',
-        
-        senderId: 'user-001',
-        chatId: 'chat-001',
-        status: 'delivered',
-        createdAt: '2024-01-15T14:40:00Z'
-      }
-    ],
-    lastMessage: {
-      id: 'msg-003',
-      content: 'Any updates on the fix?',
-      type: 'text',
-      
-      senderId: 'user-001',
-      chatId: 'chat-001',
-      status: 'delivered',
-      createdAt: '2024-01-15T14:40:00Z'
-    }
-  }
-};
-export const TicketOverview = ({withHeader}:{withHeader?:boolean}) => {
+export const TicketPage = ({withHeader}:{withHeader?:boolean}) => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const [ticket, setTicket] = useState<TicketType>(); 
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAction, setIsLoadingAction] = useState<string|null>(null);
+  const [showAddAttachment, setShowAddAttachment] = useState(false)
+
 
   const api = createAxiosAuthInstance()
   const { currentUser } = useAuth()
@@ -322,7 +140,7 @@ export const TicketOverview = ({withHeader}:{withHeader?:boolean}) => {
 
             {/* Attachments */}
             <Card className="p-6">
-              <AttachmentList ticketId={ticket.id} />
+              <AttachmentList onClose={()=>setShowAddAttachment(false)} showAddAttachment={showAddAttachment} ticketId={ticket.id} />
             </Card>
           </div>
 
@@ -385,4 +203,4 @@ export const TicketOverview = ({withHeader}:{withHeader?:boolean}) => {
   );
 };
 
-export default TicketOverview;
+export default TicketPage;

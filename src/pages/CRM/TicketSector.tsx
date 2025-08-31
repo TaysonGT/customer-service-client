@@ -8,83 +8,6 @@ import toast from 'react-hot-toast';
 import Loader from '../../components/Loader';
 import { Button, Modal } from '../../components/ui';
 
-  // Mock data - replace with API calls
-  const mockTickets: TicketType[] = [
-    {
-      id: '1',
-      subject: 'Website login issues',
-      description: 'Users cannot login to the website',
-      status: TicketStatus.OPEN,
-      priority: TicketPriority.HIGH,
-      category: 'Technical Issues',
-      isUrgent: true,
-      createdAt: '2024-01-15T10:30:00Z',
-      updatedAt: '2024-01-15T14:45:00Z',
-      attachments: [],
-      requester: {
-        id: 'user-001',
-        username: 'johndoe',
-        firstname: 'John',
-        lastname: 'Doe',
-        email: 'john.doe@example.com',
-        gender: 'male',
-        categoryId: 'cat-001',
-        supportId: 'sup-001',
-        phone: '+1234567890',
-        lastSeenAt: '2024-01-15T14:30:00Z',
-        avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        countryCode: 'US'
-      },
-      chat: {
-        id: 'chat-001',
-        title: 'Website Login Issues',
-        description: 'Login problems discussion',
-        ended: false,
-        status: 'active',
-        users: [],
-        startedAt: '2024-01-15T10:35:00Z',
-        updatedAt: '2024-01-15T14:40:00Z',
-        unread_messages: [
-          {
-            id: 'msg-001',
-            chatId: 'chat-001',
-            type: 'text',
-            senderId: 'user-001',
-            content: 'Any updates?',
-            createdAt: '2024-01-15T14:40:00Z',
-            status: 'delivered'
-          }
-        ]
-      }
-    },
-    {
-      id: '2',
-      subject: 'Payment processing failed',
-      description: 'Credit card payment not working',
-      status: TicketStatus.IN_PROGRESS,
-      priority: TicketPriority.CRITICAL,
-      category: 'Billing',
-      isUrgent: true,
-      createdAt: '2024-01-15T09:15:00Z',
-      updatedAt: '2024-01-15T14:20:00Z',
-      attachments: [],
-      requester: {
-        id: 'user-002',
-        username: 'sarahw',
-        firstname: 'Sarah',
-        lastname: 'Wilson',
-        email: 'sarah@example.com',
-        gender: 'female',
-        categoryId: 'cat-002',
-        supportId: 'sup-002',
-        phone: '+1987654321',
-        lastSeenAt: '2024-01-15T14:20:00Z',
-        avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-        countryCode: 'US'
-      }
-    }
-  ];
-
 const SupportTickets: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
@@ -345,7 +268,7 @@ const SupportTickets: React.FC = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             ticket.chat?
-                            navigate(`/chats/${ticket.chat?.id}`)
+                            navigate(`/support/chats?selected=${ticket.chat?.id}`)
                             : onClickChat(ticket)
                             
                           }}

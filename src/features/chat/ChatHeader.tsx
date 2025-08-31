@@ -1,11 +1,12 @@
 import { memo, useRef, useState } from 'react';
-import { MdClose, MdInfoOutline, MdMoreVert, MdExitToApp } from 'react-icons/md';
+import { MdClose, MdInfoOutline, MdMoreVert, MdExitToApp, MdReport } from 'react-icons/md';
 import { IChat, IUser } from '../../types/types';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { TypingUser } from '../../hooks/useTypingStatus';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Avatar } from '../../components/ui';
+import { Avatar, Button } from '../../components/ui';
 import DarkBackground from '../../components/DarkBackground';
+import { Link } from 'react-router';
 
 interface Props {
   participants: IUser[]; 
@@ -132,7 +133,7 @@ const ChatHeader: React.FC<Props> = memo(({
       </div>
     </div>
     ):
-    <div className={`${className} ${fixed ? 'h-20' : ''} px-6 bg-white flex items-center justify-between w-full`}>
+    <div className={`${className} ${fixed ? 'h-20' : ''} px-6 py-2 bg-white flex items-center justify-between w-full`}>
       <div className="flex items-center gap-4 min-w-0">
         {unsetChat && (
           <button 
@@ -145,14 +146,13 @@ const ChatHeader: React.FC<Props> = memo(({
         
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex -space-x-2">
-            {participants.slice(0, 3).map((user, i) => (
+            {/* {participants.slice(0, 3).map((user, i) => ( */}
               <Avatar 
-                key={user.id} 
-                src={user.avatarUrl} 
-                alt={user.firstname}
-                className={`w-10 h-10 ${i > 0 ? 'relative z-0' : ''}`}
+                src={participants.find(p=>p.clientProfile)?.avatarUrl}
+                alt={participants.find(p=>p.clientProfile)?.firstname}
+                className={`w-10 h-10`}
               />
-            ))}
+            {/* ))} */}
           </div>
           
           <div className="min-w-0">
@@ -213,6 +213,13 @@ const ChatHeader: React.FC<Props> = memo(({
                     <MdInfoOutline className="text-lg" />
                     <span>Chat details</span>
                   </button>
+                  <button 
+                    onClick={handleChatDetails}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <MdReport className="text-lg" />
+                    <span>Report</span>
+                  </button>
                   {onEndChat && (
                     <button 
                       onClick={handleEndChat}
@@ -259,12 +266,19 @@ const ChatHeader: React.FC<Props> = memo(({
                     <h4 className="text-sm font-medium text-gray-500 mb-2">Participants</h4>
                     <div className="space-y-2">
                       {participants.map((participant) => (
-                        <div key={participant.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
+                        <div key={participant.id} className="flex w-full items-center gap-3 p-2 hover:bg-gray-50 rounded">
                           <Avatar src={participant.avatarUrl} alt={participant.firstname} size="sm" />
                           <div>
                             <p className="font-medium text-gray-900">{participant.firstname} {participant.lastname}</p>
-                            <p className="text-xs text-gray-500">{participant.clientProfile ? 'Customer' : 'Support Agent'}</p>
+                            <p className="text-xs text-gray-500">{participant.clientProfile ? 'Client' : 'Support Agent'}</p>
                           </div>
+                          {participant.clientProfile &&
+                          <Link to={`/profile/${participant.id}`}>
+                            <Button variant='secondary' size='sm' className='ml-auto'> 
+                              Show Profile
+                            </Button>
+                          </Link> 
+                          }
                         </div>
                       ))}
                     </div>
