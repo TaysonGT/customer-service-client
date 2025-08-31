@@ -48,14 +48,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     .then(({data})=>!data.success&& toast.error(data.message))
   };
 
-  // Example: Update on mount and every 30 seconds
   useEffect(()=>{
-    // Add this to your app to verify the values
-    console.log('PROD mode:', import.meta.env.PROD);
-    console.log('Backend URL:', import.meta.env.VITE_BACKEND_URL);
-    console.log('Final baseURL:', import.meta.env.PROD 
-      ? import.meta.env.VITE_BACKEND_URL 
-      : '/api');
     getUserData();
   },[])
 
