@@ -7,6 +7,7 @@ import supabase from '../../lib/supabase';
 import AudioPlayer from './VoiceMessage';
 import { FiClock } from 'react-icons/fi';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { formatDate } from '../../utils/time';
 
 const URL_REGEX = /(?:(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z]{2,}){1,}(?:\/[^\s]*)?|(?:[a-z0-9-]+\.(?:com|net|org|io|co|gov|edu|me|ly|app|dev|ai|sh|gl|fm|bit\.ly|mm\.co)[^\s]*))/gi;
 
@@ -30,12 +31,36 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
   const [showDrop, setShowDrop] = useState<boolean>(false)
   const dropDownRef = useRef<HTMLDivElement>(null)
   const menuBtnRef = useRef<HTMLDivElement>(null)
+  const [positionRatio, setPositionRatio] = useState(0);
+  const [isInViewport, setIsInViewport] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick(dropDownRef, ()=>setShowDrop(false), [menuBtnRef])
 
+  const calculatePosition = () => {
+    if (!elementRef.current) return;
+    
+    const rect = elementRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+
+    // Calculate ratio (0 = top of viewport, 1 = bottom of viewport)
+    const ratio = Math.min(Math.max(rect.top / viewportHeight, 0), 1);
+    
+    setPositionRatio(ratio);
+    setIsInViewport(rect.top < viewportHeight && rect.bottom > 0);
+    return {ratio, isInViewport: rect.top < viewportHeight && rect.bottom > 0}
+  };
+
+  const openDropDownHandler = async(e: React.MouseEvent<HTMLElement>)=>{
+    e.preventDefault()
+    const data = calculatePosition()
+    setShowDrop(true)
+    console.log(data?.ratio? data.ratio<0.5?'top':'bottom': null)
+  }
+
   const messageClass = isCurrentUser
     ? 'bg-[#F4F6F6] mr-auto pl-6'
-    : 'bg-emerald-800 text-white ml-auto';
+    : `${message.type ==='image'? 'bg-black/80' : 'bg-emerald-800'} text-white ml-auto`;
   const headerClass = isCurrentUser
     ? 'rounded-tl-none'
     : 'rounded-tr-none';
@@ -116,22 +141,14 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
       case 'image':
         return (
           <div className="max-w-xs">
-            <div className='w-60 h-60'>
+            <div className='max-w-60 h-60'>
               <img 
                 src={url||'#'} 
                 alt="Sent image"
-                className="rounded-md h-full object-contain"
-                onClick={() => window.open(url||"#", '_blank')}
+                className="rounded-md h-full object-cover"
+                onDoubleClick={() => window.open(url||"#", '_blank')}
               />
             </div>
-            <a 
-              href={url||'#'} 
-              download={`image-${message.createdAt}.jpg`}
-              className="mt-2 inline-flex items-center text-sm text-blue-500 hover:underline"
-            >
-              <FaDownload className="mr-1" />
-              Download
-            </a>
           </div>
         );
 
@@ -174,26 +191,28 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
   };
 
   return (
-    <div className={`p-2 z-0 rounded-md ${messageClass} ${i === 0 && headerClass} relative`}
-      onDoubleClick={()=> setShowDrop(true)}
+    <div className={`p-2 rounded-md ${messageClass} ${i === 0 && headerClass} relative`}
+      onDoubleClick={openDropDownHandler}
+      onContextMenu={openDropDownHandler}
+      ref={elementRef}
     >
-      <div className={`absolute z-1000 overflow-hidden rounded-lg p-2 border-gray-200 border scale-y-95 opacity-0 bottom-[80%] left-1/2 -translate-x-1/2 bg-white text-black shadow-lg text-sm duration-200 ${showDrop? 'pointer-events-auto opacity-100 bottom-[100%] scale-y-100 origin-bottom':'pointer-events-none'} `}>
-        <div ref={dropDownRef} className='flex flex-col min-w-20 text-nowrap text-xs text-gray-700'>
+      <div className={`absolute z-1000 overflow-hidden rounded-lg p-2 border-gray-200 border scale-y-95 opacity-0 ${positionRatio>0.5?'bottom-[80%]':'top-[80%]'} left-1/2 -translate-x-1/2 bg-white text-black shadow-lg text-sm duration-200 ${showDrop? `pointer-events-auto opacity-100 scale-y-100 ${positionRatio>0.5?'bottom-[100%] origin-bottom':'top-[100%] origin-top'}`:'pointer-events-none'} `}>
+        <div ref={dropDownRef} className='flex flex-col min-w-20 z-150 text-nowrap text-xs text-gray-700'>
           {isCurrentUser?
           <>
           <div
             onClick={()=>setShowDrop(false)}
-            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 hover:bg-gray-50'>
+            className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 hover:bg-gray-50'>
               <MdEdit className='text-lg'/> Edit
           </div>        
           <div
             onClick={()=>setShowDrop(false)}
-            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 hover:bg-gray-50'>
+            className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 hover:bg-gray-50'>
               <MdInfoOutline className="text-lg" /> Info
           </div>        
           <div
             onClick={()=>setShowDrop(false)}
-            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 text-red-500 hover:bg-gray-50'>
+            className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 text-red-500 hover:bg-gray-50'>
               <MdDelete className='text-lg' /> Delete
           </div>
           </>
@@ -201,16 +220,30 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
           <>
             <div
             onClick={()=>setShowDrop(false)}
-            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 hover:bg-gray-50'>
-                <MdReply className='text-lg' /> Reply
+            className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 hover:bg-gray-50'>
+              <MdReply className='text-lg' /> Reply
             </div> 
             <div
             onClick={()=>setShowDrop(false)}
-            className='flex items-center gap-2 rounded-lg p-2 pr-4 cursor-pointer duration-75 text-red-500 hover:bg-gray-50'>
-                <MdReport className='text-lg' /> Report
+            className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 text-red-500 hover:bg-gray-50'>
+              <MdReport className='text-lg' /> Report
             </div> 
           </>
-          }       
+          }     
+          {message.type === 'image' && 
+            <a 
+              onClick={()=>setShowDrop(false)}
+              href={url||'#'} 
+              download={`image-${message.createdAt}.jpg`}
+              className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 hover:bg-gray-50'>
+              {/* className="mt-2 inline-flex items-center text-sm text-blue-500 hover:underline" */}
+              <FaDownload className="mr-1" />
+              Download
+            </a>      
+          }
+          <p className='flex items-center text-xs text-gray-700 gap-2 rounded-lg py-1 px-2 text-wrap'>
+            {new Date(message.createdAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}
+          </p>
         </div>
       </div>
       {renderMessageContent()}
