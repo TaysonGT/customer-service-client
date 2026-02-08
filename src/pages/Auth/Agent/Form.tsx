@@ -45,10 +45,10 @@ const Form = () => {
   const hasFieldError = errors.username || errors.password;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full grow relative flex flex-col justify-center pb-4 px-10 lg:pb-10 xl:px-20">
-        <h1 className='text-2xl lg:text-3xl text-center font-bold mb-8'>Support Agent Portal</h1>
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full grow relative flex flex-col justify-center">
+        {/* <p className='text-2xl shadow-black/10 text-cyan-950 self-center space-x-2 px-8 py-3 border-2 rounded-2xl border-cyan-950 mb-16'><span>Support Portal</span> <span className='font-extralight'>|</span>  <span className='font-light'>Login</span></p> */}
       {(formError || hasFieldError) && (
-        <div className="mb-4 p-2 px-4  animate-appear border-red-500 border-x-2 bg-red-100 text-red-700 absolute bottom-full left-1/2 -translate-x-1/2">
+        <div className="mb-4 p-2 px-4  animate-appear border-red-500 border-x-2 bg-red-100 text-red-700 absolute top-0 z-50 left-1/2 -translate-x-1/2">
           <p>{formError || 'Please fill all required fields'}!</p>
         </div>
       )}
@@ -75,7 +75,7 @@ const Form = () => {
           }`}
         />
       </div>
-      <div className='flex items-center gap-1 lg:pl-4 mb-2 text-sm text-gray-700'>
+      <div className='flex items-center gap-1 lg:pl-4 mb-4 text-sm text-gray-700'>
         <input {...register('remember')} type='checkbox'/>
         <p>Remember Me</p>
       </div>
@@ -83,7 +83,7 @@ const Form = () => {
       <button 
         type="submit"
         disabled={isSubmitting}
-        className="w-full text-sm bg-accent hover:bg-[#6ea6ff] disabled:bg-[#b7d2ff] duration-150 cursor-pointer text-white p-2 lg:p-3 rounded lg:rounded-4xl disabled:opacity-50"
+        className="w-full text-sm lg:text-base bg-accent hover:bg-[#6ea6ff] hover:border-[#6ea6ff] disabled:bg-transparent disabled:border-main disabled:text-main border border-accent duration-150 cursor-pointer text-white p-2 lg:p-3 rounded lg:rounded-4xl disabled:opacity-50"
       >
         {isSubmitting ? 'Logging in...' : 'Login'}
       </button>

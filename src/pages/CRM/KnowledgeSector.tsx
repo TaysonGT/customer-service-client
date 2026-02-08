@@ -1,8 +1,7 @@
 import { useState } from "react";
-import TicketList, { TicketType } from "../../features/tickets/TicketList";
-import TicketDetails from "../../features/tickets/TicketDetails";
+import TicketList from "../../features/tickets/TicketList";
+import { TicketType } from '../../types/types'
 import { IUser } from "../../types/types";
-import { FaServicestack } from "react-icons/fa";
 import KnowledgeBase from "../../features/knowledge/KnowledgeBase";
 
 const KnowledgeSector = ()=>{

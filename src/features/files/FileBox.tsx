@@ -1,15 +1,17 @@
 import { useState, useCallback, useRef } from 'react';
 import { FileMetadata } from './SidebarDataManager';
-import { FiFile, FiImage, FiLink, FiDownload, FiEye } from 'react-icons/fi';
+import { FiFile, FiLink, FiDownload, FiEye, FiMusic, FiImage } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { saveAs } from 'file-saver';
 import { createPortal } from 'react-dom';
 import { TooltipText } from '../../components/TooltipText';
+import ImagePreview from '../../components/ImagePreview';
 
 const FileBox = ({ file }: { file: FileMetadata }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -31,7 +33,7 @@ const FileBox = ({ file }: { file: FileMetadata }) => {
   const handleDownload = useCallback(async () => {
     try {
       setIsDownloading(true);
-      const response = await fetch(file.signedUrl);
+      const response = await fetch(file.path);
       const blob = await response.blob();
       saveAs(blob, file.name);
     } catch (error) {
@@ -43,12 +45,17 @@ const FileBox = ({ file }: { file: FileMetadata }) => {
 
   const handlePreview = () => {
     if (file.type === 'image') {
-      window.open(file.signedUrl, '_blank');
+      // window.open(file.path, '_blank');
+      setShowPreview(true);
     }
   };
 
   return (
     <div className="relative">
+      {(showPreview&&file.type==='image')&& createPortal(
+        <ImagePreview {...{src: file.path||'#', alt: file.name, show: showPreview, onClose: () => setShowPreview(false), type: 'chat'}}/>,
+        document.body
+      )}
       <motion.div
         ref={textRef}
         initial={{ opacity: 0, y: 5 }}
@@ -67,13 +74,18 @@ const FileBox = ({ file }: { file: FileMetadata }) => {
           <div className="aspect-square flex justify-center items-center bg-gray-50 rounded-md overflow-hidden">
             {file.type === 'document' ? (
               <FiFile className="text-3xl text-gray-400" />
+            ) : 
+            file.type === 'audio' ? (
+              <FiMusic className="text-3xl text-gray-400" />
             ) : (
-              <img 
-                src={file.signedUrl} 
-                alt={file.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+              // <img 
+              //   src={file.path} 
+              //   alt={file.name}
+              //   className="w-full h-full object-cover"
+              //   loading="lazy"
+              //   decoding="async"
+              // />
+              <FiImage className="text-3xl text-gray-400" />
             )}
           </div>
           
@@ -87,15 +99,15 @@ const FileBox = ({ file }: { file: FileMetadata }) => {
           <AnimatePresence>
             {showActions && (
               <motion.div
-                initial={{ opacity: 0, y: 5 }}
+                initial={{ opacity: 0, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 5 }}
+                exit={{ opacity: 0, y: 0 }}
                 className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center gap-2"
               >
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(file.signedUrl);
+                    navigator.clipboard.writeText(file.path);
                   }}
                   className="p-2 bg-white rounded-full text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                   title="Copy link"

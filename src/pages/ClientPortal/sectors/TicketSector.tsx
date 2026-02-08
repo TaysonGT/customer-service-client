@@ -100,9 +100,11 @@ const TicketSector:React.FC<Props> = ({tickets, onAction, isLoading}) => {
                   <Badge variant={statusVariantMap[ticket.status] as BadgeVariant}>
                     {ticket.status.replace('-', ' ')}
                   </Badge>
-                  <Button variant="outline" size="sm">
-                    <Link to={`/tickets/${ticket.id}`}>View</Link>
-                  </Button>
+                  <Link to={`/tickets/${ticket.id}`}>
+                    <Button variant="outline" size="sm">
+                      View
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}

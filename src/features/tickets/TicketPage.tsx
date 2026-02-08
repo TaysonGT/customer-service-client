@@ -140,6 +140,10 @@ export const TicketPage = ({withHeader}:{withHeader?:boolean}) => {
 
             {/* Attachments */}
             <Card className="p-6">
+              <div className='w-full flex items-center justify-between mb-4'>
+                <h3 className="font-medium">Attachments</h3>
+                <Button variant='secondary' size='sm' onClick={()=>setShowAddAttachment(true)}>Add Attachment</Button>
+              </div>
               <AttachmentList onClose={()=>setShowAddAttachment(false)} showAddAttachment={showAddAttachment} ticketId={ticket.id} />
             </Card>
           </div>
@@ -180,18 +184,18 @@ export const TicketPage = ({withHeader}:{withHeader?:boolean}) => {
               <div className="space-y-3">
                 {ticket.status === TicketStatus.OPEN&&
                   <Button variant="primary" fullWidth>
-                    Edit Ticket
+                    <span className='text-sm'>Edit Ticket</span>
                   </Button>
                 }
                 <Button variant="outline" fullWidth>
-                  Add Note
+                  <span className='text-sm'>Add Note</span>
                 </Button>
                 {Object.values(AdminRole).includes(currentUser?.role as AdminRole) && ticket.status !== TicketStatus.CLOSED && (
                   <Button onClick={()=>{
                     setIsLoadingAction('close')
                     handleClose()
                   }} variant="danger" disabled={isLoadingAction==='close'} fullWidth>
-                    {isLoadingAction==='close'? 'Closing Ticket...': 'Close Ticket'}
+                    <span className='text-sm'>{isLoadingAction==='close'? 'Closing Ticket...': 'Close Ticket'}</span>
                   </Button>
                 )}
               </div>

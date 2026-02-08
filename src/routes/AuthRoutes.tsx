@@ -9,7 +9,7 @@ const AuthRoutes = () => {
     if(isLoading){
         return (
             <div className='h-screen w-screen flex justify-center items-center'>
-                <Loader size={100} thickness={20}/>
+                <Loader size={50} thickness={7}/>
             </div>
         )
     }

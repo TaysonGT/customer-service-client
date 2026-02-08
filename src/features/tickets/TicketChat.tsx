@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { StatusBadge, Button, Loader, Avatar } from '../../components/ui';
+import { useParams, useNavigate } from 'react-router-dom';
+import { StatusBadge, Button, Avatar } from '../../components/ui';
 import { useAuth } from '../../context/AuthContext';
 import { createAxiosAuthInstance } from '../../services/axiosAuth';
 import toast from 'react-hot-toast';
 import { TicketType, TicketStatus, AdminRole } from '../../types/types';
 import ChatBoxFixed from '../chat/ChatBoxFixed';
 import { AttachmentList } from './AttachmentList';
+import Loader from '../../components/Loader';
+import { useChatMessages } from '../../hooks/useChatMessages';
 
 export const TicketChat = ({ withHeader }: { withHeader?: boolean }) => {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -18,6 +20,8 @@ export const TicketChat = ({ withHeader }: { withHeader?: boolean }) => {
   const api = createAxiosAuthInstance();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  const { groups, sendMessage, participants, loadMore, hasMore, isLoading: isChatLoading } = useChatMessages({ chatId: ticket?.chat?.id });
 
   const refetch = async()=>{
     setIsLoading(true)
@@ -65,22 +69,10 @@ export const TicketChat = ({ withHeader }: { withHeader?: boolean }) => {
     <div className="h-full w-full bg-gray-50 flex flex-col">
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left sidebar - Ticket info */}
-        <div className="w-full lg:w-1/3 xl:w-1/4 flex flex-col bg-white border-r border-gray-200 p-8">
-          <div className='w-full justify-between flex'>
-            <h2 className="text-2xl font-bold text-gray-900">Ticket Details</h2>
-            <Link
-              to={`/tickets/${ticketId}`}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Ticket Page
-            </Link>
-          </div>
-          <div className="mb-6">
+        <div className="w-full lg:w-1/3 xl:w-1/4 flex flex-col bg-white border-r border-gray-200 py-8 px-2">
+          <div className="mb-6 px-6">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold text-gray-700">ID: #TKT-{ticket.id.toString().padStart(6, '0')}</h2>
+              <h2 className="text-2xl font-semibold text-gray-700">#TKT-{ticket.id.toString().padStart(6, '0')}</h2>
               <StatusBadge status={ticket.status} priority={ticket.priority} />
             </div>
             <p className="text-sm text-gray-500">
@@ -99,7 +91,7 @@ export const TicketChat = ({ withHeader }: { withHeader?: boolean }) => {
             </div>
           )}
 
-          <div className="space-y-6 grow min-h-0 overflow-y-auto">
+          <div className="space-y-6 grow min-h-0 overflow-y-auto px-6">
             <div>
               <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Requester</h3>
               <div className="flex items-center">
@@ -200,167 +192,15 @@ export const TicketChat = ({ withHeader }: { withHeader?: boolean }) => {
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab navigation */}
-          {/* <div className="bg-white border-b border-gray-200">
-            <nav className="flex -mb-px">
-              <button
-                onClick={() => setActiveTab('details')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 ${
-                  activeTab === 'details'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Ticket Details
-              </button>
-              <button
-                onClick={() => setActiveTab('chat')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 ${
-                  activeTab === 'chat'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Chat
-              </button>
-            </nav>
-          </div> */}
-
+          
           {/* Tab content */}
           <div className="flex-1 overflow-auto">
-            {/* {activeTab === 'details' ? (
-              <div className="p-6">
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-3">{ticket.subject}</h2>
-                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r mb-6">
-                    <p className="text-gray-700 whitespace-pre-wrap">{ticket.description}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  <div className="bg-white rounded-lg border border-gray-200 p-5">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">Ticket Information</h3>
-                    <div className="space-y-4">
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-500">Status</span>
-                        <span className="text-sm font-medium">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            ${ticket.status === TicketStatus.OPEN ? 'bg-blue-100 text-blue-800' : ''}
-                            ${ticket.status === TicketStatus.IN_PROGRESS ? 'bg-yellow-100 text-yellow-800' : ''}
-                            ${ticket.status === TicketStatus.RESOLVED ? 'bg-green-100 text-green-800' : ''}
-                            ${ticket.status === TicketStatus.CLOSED ? 'bg-gray-100 text-gray-800' : ''}`}>
-                            {ticket.status.replace('_', ' ')}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-500">Priority</span>
-                        <span className="text-sm font-medium">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            ${ticket.priority === TicketPriority.LOW ? 'bg-gray-100 text-gray-800' : ''}
-                            ${ticket.priority === TicketPriority.MEDIUM ? 'bg-yellow-100 text-yellow-800' : ''}
-                            ${ticket.priority === TicketPriority.HIGH ? 'bg-orange-100 text-orange-800' : ''}
-                            ${ticket.priority === TicketPriority.CRITICAL ? 'bg-red-100 text-red-800' : ''}`}>
-                            {ticket.priority}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-500">Category</span>
-                        <span className="text-sm text-gray-900">{ticket.category}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-500">Created</span>
-                        <span className="text-sm text-gray-900">{new Date(ticket.createdAt).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-500">Last Updated</span>
-                        <span className="text-sm text-gray-900">{new Date(ticket.updatedAt).toLocaleString()}</span>
-                      </div>
-                      {ticket.resolvedAt && (
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">Resolved</span>
-                          <span className="text-sm text-gray-900">{new Date(ticket.resolvedAt).toLocaleString()}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-lg border border-gray-200 p-5">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">People</h3>
-                    <div className='flex flex-col gap-2'>
-                      {ticket.requester ? (
-                        <div className="flex items-start space-x-4">
-                          <img
-                            src={ticket.requester.avatarUrl || '/default-avatar.png'}
-                            alt={ticket.requester.firstname}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                          <div className="flex-1">
-                            <div className='flex gap-4'>
-                              <h4 className="text-sm font-semibold text-gray-900">
-                                {ticket.requester.firstname} {ticket.requester.lastname}
-                              </h4>
-                              <p className="text-sm font-semibold text-gray-600">
-                                Requester
-                              </p>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">{ticket.requester.email}</p>
-                            {ticket.requester.clientProfile?.company && (
-                              <p className="text-sm text-gray-500 mt-1">{ticket.requester.clientProfile.company}</p>
-                            )}
-                            {ticket.requester.clientProfile?.jobTitle && (
-                              <p className="text-sm text-gray-500">{ticket.requester.clientProfile.jobTitle}</p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-500">No requester information available</p>
-                      )}
-                      {ticket.assignee&&
-                        <div className="flex items-start space-x-4">
-                          <img
-                            src={ticket.assignee.avatarUrl || '/default-avatar.png'}
-                            alt={ticket.assignee.firstname}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                          <div className="flex-1">
-                            <h4 className="text-sm font-semibold text-gray-900">
-                              {ticket.assignee.firstname} {ticket.assignee.lastname}
-                            </h4>
-                            <p className="text-sm text-gray-500 mt-1">{ticket.assignee.email}</p>
-                            {ticket.assignee.adminProfile?.title && (
-                              <p className="text-sm text-gray-500 mt-1">{ticket.assignee.adminProfile.title}</p>
-                            )}
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-lg border border-gray-200 p-5">
-                    <div className='w-full flex justify-between items-center border-gray-100 mb-4 pb-2 border-b'>
-                      <h3 className="text-lg font-semibold text-gray-800">Attachments</h3>
-                      <Button 
-                        onClick={()=>setShowAddAttachment(true)}
-                        variant="outline" size='sm'>
-                          Add
-                      </Button>
-                    </div>
-                    <AttachmentList {...{ticketId: ticket.id, onClose: ()=>setShowAddAttachment(false), showAddAttachment}} />
-                  </div>
-
-                  <div className="bg-white rounded-lg border border-gray-200 p-5">
-                    <ChatStatus chat={ticket.chat} ticketId={ticket.id}/>
-                  </div>
-
-                </div>
-              </div>
-            ) : ( */}
               <div className="h-full">
                 {ticket.chat ? (
-                  <ChatBoxFixed chat={ticket.chat} />
+                  <ChatBoxFixed {...{
+                    chat:ticket.chat,
+                    groups, sendMessage, participants, loadMore, hasMore, isLoading: isChatLoading
+                  }} />
                 ) : (
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">

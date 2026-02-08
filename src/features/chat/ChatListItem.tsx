@@ -41,6 +41,7 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
   };
 
   useEffect(()=>{
+    if(isLoading) return;
     setLastVisibleText(()=>{
       return lastMessage?
       lastMessage.senderId==currentUser?.id?
@@ -50,11 +51,11 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
       : 'Start Chatting Now'
     })
 
-  },[lastMessage])
+  },[lastMessage, isLoading])
 
   return (
-    isLoading?(
-    <motion.div
+    (isLoading||!lastVisibleText)?(
+    <div
       className="p-4 rounded-lg border-l-4 border-transparent"
     >
       <div className="flex w-full overflow-hidden justify-between items-start">
@@ -107,13 +108,12 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-100/50 to-transparent animate-[shimmer_1.5s_infinite]" />
         </div>
       </div>
-    </motion.div>
+    </div>
     )
     :
-    <motion.div
+    <div
       ref={textRef}
       key={chat.id}
-      whileHover={{ x: 4 }}
       className={`p-4 bg-white cursor-pointer rounded-lg transition-all ${
         selectedChat?.id === chat.id 
           ? 'bg-blue-50' 
@@ -139,8 +139,6 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
               <Avatar {...{src: client?.avatarUrl, alt: client?.firstname}} />
             </div>
             <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-              // chat.status === 'active' ? 'bg-green-500' : 
-              // chat.status === 'waiting' ? 'bg-yellow-500' : 'bg-gray-400'
               client? new Date(client.lastSeenAt).getTime() > new Date().getTime() - 5 * 60 *1000 ? 'bg-green-500' :
               'bg-yellow-500' : 'bg-gray-400'
             }`}></div>
@@ -175,12 +173,10 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
                   </span>
                   <span className='text-sm text-gray-600'>{getTypingText(typingUsers, chat)}</span>
                 </motion.div>
-              ) : lastMessage ? (
+              ) : (
                 <p className="text-sm truncate text-gray-600 grow">
                   {lastVisibleText}
                 </p>
-              ) : (
-                <p className="text-sm text-gray-400 font-semibold w-full">Start chatting now</p>
               )}
               {unreadMessages.length > 0 && (
                 <span className="h-4 aspect-square rounded-full bg-blue-500 flex items-center shrink-0 justify-center text-white text-xs">
@@ -209,7 +205,7 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
           </span>
           {/* {chat.tags?.length > 0 && ( */}
             <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
-              #Electric
+              #Wireless
             </span>
           {/* )} */}
         </div>
@@ -221,7 +217,7 @@ const ChatListItem:React.FC<Props> = ({chat, setChat, selectedChat}) => {
           {/* } */}
         </span>
       </div>
-    </motion.div>
+    </div>
     )
 }
 

@@ -1,17 +1,32 @@
 import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import EmojiPickerBox from './EmojiPicker';
-import { useChatMessages } from '../../hooks/useChatMessages';
 import MessageInput from './MessageInput';
 import MessageGroup from './MessageGroup';
 import ChatHeader from './ChatHeader';
 import { useAuth } from '../../context/AuthContext';
-import { IChat } from '../../types/types';
+import { IChat, IFileMeta, IMessageGroup, IMessageType, IUser } from '../../types/types';
 import { MdArrowDownward } from 'react-icons/md';
 import Loader from '../../components/Loader';
 import { useTypingStatus } from '../../hooks/useTypingStatus';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void }) => {
+interface Props {
+  chat: IChat; 
+  unsetChat?: () => void 
+  groups: IMessageGroup[];
+  loadMore: () => Promise<void>;
+  sendMessage: ({ content, type, messagesEndRef, meta }: {
+      content: string;
+      type: IMessageType;
+      messagesEndRef?: React.RefObject<HTMLDivElement | null>;
+      meta?: IFileMeta;
+  }) => Promise<string | undefined>;
+  hasMore: boolean;
+  participants: IUser[];
+  isLoading: boolean;
+}
+
+const ChatBoxFixed: React.FC<Props> = ({ chat, unsetChat, groups, sendMessage, participants, loadMore, hasMore, isLoading }) => {
   const [showEmoji, setShowEmoji] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,7 +37,7 @@ const ChatBoxFixed = ({ chat, unsetChat }: { chat: IChat; unsetChat?: () => void
   const isScrollingRef = useRef(false);
   
   const { currentUser } = useAuth();
-  const { groups, sendMessage, participants, loadMore, hasMore, isLoading } = useChatMessages({ chatId: chat.id });
+  // const { groups, sendMessage, participants, loadMore, hasMore, isLoading } = useChatMessages({ chatId: chat.id });
   const { typingUsers, setTyping } = useTypingStatus(chat.id, {
     id: currentUser!.id,
   });

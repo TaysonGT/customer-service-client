@@ -6,7 +6,7 @@ import { TicketType, TicketStatus, TicketPriority } from '../../types/types';
 import { createAxiosAuthInstance } from '../../services/axiosAuth';
 import toast from 'react-hot-toast';
 import Loader from '../../components/Loader';
-import { Button, Modal } from '../../components/ui';
+import { Avatar, Button, Modal } from '../../components/ui';
 
 const SupportTickets: React.FC = () => {
   const navigate = useNavigate();
@@ -171,7 +171,13 @@ const SupportTickets: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ticket
+                    Id
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Subject
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Requester
@@ -201,7 +207,7 @@ const SupportTickets: React.FC = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-900">
-                              #{ticket.id}
+                              #TKT-{ticket.id.toString().padStart(6, '0')}
                             </span>
                             {getUnreadCount(ticket) > 0 && (
                               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
@@ -209,22 +215,26 @@ const SupportTickets: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-900 font-medium">
-                            {ticket.subject}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {ticket.category}
-                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[ticket.status]}`}> */}
+                        {ticket.subject}
+                      {/* </span> */}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[ticket.status]}`}> */}
+                        {ticket.category}
+                      {/* </span> */}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       {ticket.requester?
                         <div className="flex items-center">
-                          <img
+                          <Avatar
                             src={ticket.requester.avatarUrl}
-                            alt={ticket.requester.firstname}
-                            className="w-8 h-8 rounded-full"
+                            // alt={ticket.requester.firstname}
+                            className="w-8 h-8"
                           />
                           <span className="ml-3 text-sm text-gray-900">
                             {ticket.requester.firstname} {ticket.requester.lastname}

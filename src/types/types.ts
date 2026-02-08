@@ -111,6 +111,7 @@ export interface IChat {
   updatedAt: string;
   unread_messages: IChatMessage[];
   status: 'active'|'waiting';
+  ticket: TicketType;
 }
 
 export type IMessageType = "text" | "audio" | "image" | "document"

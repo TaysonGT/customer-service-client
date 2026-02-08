@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fi';
 import { IFile, TicketPriority, TicketStatus, TicketType } from '../../types/types';
 import { AttachmentList } from './AttachmentList';
+import { Button } from '../../components/ui';
 
 interface TicketDetailsProps {
   ticket: TicketType;
@@ -17,6 +18,7 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onUpdate }) => {
   const [currentStatus, setCurrentStatus] = useState(ticket.status);
   const [currentPriority, setCurrentPriority] = useState(ticket.priority);
   const [attachments, setAttachments] = useState<IFile[]>([]);
+  const [showAddAttachment, setShowAddAttachment] = useState(false);
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as TicketStatus;
@@ -165,6 +167,10 @@ const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onUpdate }) => {
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className='w-full flex items-center justify-between mb-4'>
+                <h3 className="font-medium">Attachments</h3>
+                <Button variant='primary' size='sm' onClick={()=>setShowAddAttachment(true)}>Add Attachment</Button>
+              </div>
               <AttachmentList {...{ticketId: ticket.id}}/>
             </div>
           </div>

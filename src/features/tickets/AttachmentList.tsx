@@ -9,11 +9,16 @@ import toast from 'react-hot-toast';
 import supabase from '../../lib/supabase';
 import { getFileType } from '../../utils/file.utils';
 import { useAuth } from '../../context/AuthContext';
+import { MdPreview } from 'react-icons/md';
+import { IoEye } from 'react-icons/io5';
+import ImagePreview from '../../components/ImagePreview';
+import { FaRegEye } from 'react-icons/fa6';
+import { GiBleedingEye } from "react-icons/gi";
 
 interface AttachmentListProps {
   className?: string;
-  showAddAttachment: boolean;
-  onClose: ()=>void;
+  showAddAttachment?: boolean;
+  onClose?: ()=>void;
   ticketId: string;
 }
 
@@ -27,6 +32,9 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
   const [isUploading, setIsUploading] = useState(false)
   const [attachments, setAttachments] = useState<IFile[]>([])
   const [uploadFiles, setUploadFiles] = useState<File[]>([])
+  const [showPreview, setShowPreview] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string>('')
+  const [previewAlt, setPreviewAlt] = useState<string>('')
 
   const {currentUser} = useAuth()
 
@@ -97,7 +105,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
           !data.success&& toast.error(data.message)
         )
       }
-      onClose()
+      onClose&& onClose();
       toast.success('Files uploaded successfully!')
       refetch()
     } catch (error: any) {
@@ -130,10 +138,8 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
 
   return (
     <div className={className}>
-      {/* <div className='flex justify-between items-center w-full mb-2'> */}
-        {/* <h3 className="text-sm font-medium text-gray-900">Attachments</h3> */}
-        
-      {/* </div> */}
+      {showPreview&&<ImagePreview src={previewImage} alt={previewAlt} show={showPreview} onClose={() => setShowPreview(false)} type={'ticket_attachment'} />}
+      
       {isLoading?
         <div className='w-full relative flex items-center justify-center py-2'>
           <Loader size={30} thickness={6} />
@@ -154,6 +160,11 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
                 {formatFileSize(file.size)} • {file.type}
               </p>
             </div>
+            <button onClick={()=>{
+              setPreviewImage(file.path);setPreviewAlt(file.name);setShowPreview(true)}} className='flex gap-1.5 items-center text-xs text-blue-600 hover:underline p-2 px-3'>
+              <FaRegEye className='text-lg'/>
+              Preview
+            </button>
           </div>
         ))}
       </div>
@@ -164,7 +175,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
       {/* <FileTable {...{ files: attachments, isLoading: false }} /> */}
       {showAddAttachment&&
       <>
-        <Modal {...{isOpen: showAddAttachment, onClose, title: 'Add Attachment'}} size='md'>
+        <Modal {...{isOpen: showAddAttachment, onClose: ()=>onClose&& onClose(), title: 'Add Attachment'}} size='md'>
           <FileUploadWithPreview {...{onFilesChange: (files)=>setUploadFiles(files)}} />
           <div className='flex mt-4 gap-4'>
             <Button variant='outline' size='sm' fullWidth onClick={onClose}>

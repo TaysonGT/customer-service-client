@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import supabase from '../lib/supabase';
-import { IChat, IChatMessage, IFileMeta, IMessageGroup, IMessageType, IUser } from '../types/types';
+import { IChat, IChatMessage, IFile, IFileMeta, IMessageGroup, IMessageType, IUser } from '../types/types';
 import { useAxiosAuth } from './useAxiosAuth';
 import useSound from 'use-sound';
 import sound from '../assets/audio/message-2.wav';
@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../context/AuthContext';
 
 interface UseChatMessagesProps {
-  chatId: string;
+  chatId?: string;
   updatesOnly?: boolean;
   chat?: IChat;
 }
@@ -18,6 +18,7 @@ interface UseChatMessagesProps {
 export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMessagesProps) => {
   // State management
   const [groups, setGroups] = useState<IMessageGroup[]>([]);
+  const [fileMessages, setFileMessages] = useState<IChatMessage[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [participants, setParticipants] = useState<IUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,12 +80,17 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
 
   // Message loading
   const loadMessages = useCallback(async () => {
+    if(!chatId) return;
+
     setIsLoading(true);
     try {
       const { data } = await api.get(`/chats/${chatId}/messages`, {
         params: { cursor, limit: 20, initial: !cursor }
       });
       const newParticipants = await refetchParticipants()
+
+      setFileMessages(data.fileMessages || [])
+
       setGroups(prev => {
         const allMessages = cursor 
           ? [...data.messages, ...prev.flatMap(group => group.messages)]
@@ -115,6 +121,8 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
     messagesEndRef?: React.RefObject<HTMLDivElement | null>;
     meta?: IFileMeta;
   }) => {
+    if(!chatId) return;
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return toast.error('Authentication required');
     if (!meta && !content && (type === 'document' || type === 'image')) {
@@ -218,6 +226,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
       const {data: fileData} = await api.get(`/chats/files/${newMessage.id}`)
       if(!fileData.success) return toast.error(fileData.message)
       newMessage.file = fileData.file
+      setFileMessages(prev=>[...prev, newMessage]);
     }
 
     if (updatesOnly && chat) {
@@ -245,7 +254,8 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
   // Effects
   useEffect(() => {
     if ((updatesOnly && !chat?.users?.length) || 
-        (!updatesOnly && participants.length < 1)) {
+        (!updatesOnly && participants.length < 1) ||
+        !chatId) {
       return;
     }
 
@@ -284,6 +294,8 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
   }, [chatId, participants.length, updatesOnly, chat]);
 
   useEffect(() => {
+    if (!chatId) return;
+
     const reset = async () => {
       setGroups(updatesOnly && chat ? 
         (chat.lastMessage ? groupMessages([chat.lastMessage], chat.users) : []) 
@@ -305,6 +317,7 @@ export const useChatMessages = ({ chatId, updatesOnly = false, chat }: UseChatMe
 
   return { 
     groups,
+    fileMessages,
     setGroups,
     setCursor,
     loadMore: loadMessages, 

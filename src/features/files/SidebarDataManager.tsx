@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import FileBox from './FileBox';
-import { IChat } from '../../types/types';
-import { useAxiosAuth } from '../../hooks/useAxiosAuth';
-import { IoDocumentText, IoImagesOutline, IoDocumentTextOutline, IoPeopleOutline, IoFolderOpenOutline } from 'react-icons/io5';
-import Loader from '../../components/Loader';
+import { IChatMessage, IUser } from '../../types/types';
+import { IoDocumentText, IoImagesOutline, IoDocumentTextOutline, IoFolderOpenOutline, IoMusicalNotes } from 'react-icons/io5';
 import supabase from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import {Avatar} from '../../components/ui';
+import Loader from '../../components/Loader';
 
 interface Props {
-  selectedChat: IChat | null;
+  messages:IChatMessage[]
+  isChatLoading: boolean;
+  user?: IUser;
 }
 
 export interface IAccount {
@@ -25,60 +25,62 @@ export interface FileMetadata {
   name: string;
   size: number;
   type: string;
-  signedUrl: string;
-  createdAt?: string;
+  uploaded_at: string;
 }
 
 const sectorOptions = [
-  { value: 'all', label: 'All Files', icon: IoFolderOpenOutline },
+  { value: 'all', label: 'All', icon: IoFolderOpenOutline },
   { value: 'documents', label: 'Documents', icon: IoDocumentTextOutline },
   { value: 'images', label: 'Images', icon: IoImagesOutline },
-  { value: 'accounts', label: 'Accounts', icon: IoPeopleOutline }
+  { value: 'audio', label: 'Audio', icon: IoMusicalNotes }
 ];
 
-const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
-  const api = useAxiosAuth();
+const SidebarDataManager: React.FC<Props> = ({ messages, user, isChatLoading }) => {
   const [documents, setDocuments] = useState<FileMetadata[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [images, setImages] = useState<FileMetadata[]>([]);
-  const [accounts, setAccounts] = useState<IAccount[]>([]);
+  const [audio, setAudio] = useState<FileMetadata[]>([]);
   const [sector, setSector] = useState<string>('all');
 
+  const getLink = async(message:IChatMessage)=>{
+    if(message.localId) return message.file?.path || ''
+
+    const { data } = await supabase.storage
+    .from('chats_uploads')
+    .createSignedUrl(message.file!.path, 3600);
+
+    return data?.signedUrl || '';
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
+    if(isChatLoading) return;
+    const organizeFiles = async () => {
       try {
-        if (!selectedChat) return;
+        const imagesWithUrls:FileMetadata[] = []
+        const docsWithUrls:FileMetadata[] = []
+        const audioWithUrls:FileMetadata[] = []
 
-        const clientId = selectedChat?.users?.find(p => p.clientProfile)?.id;
-        if (!clientId) throw new Error('No client provided');
+        await Promise.all(
+          messages.map(async (message: IChatMessage) => {
+            if(!message.file) return;
+            const file = message.file;
+            
+            const filePath = await getLink(message);
+            
+            if(file.type==='document'){
+              docsWithUrls.push({...file, path: filePath})
+            }else if(file.type==='image'){
+              imagesWithUrls.push({...file, path: filePath})
+            }else if(file.type==='audio'){
+              audioWithUrls.push({...file, path: filePath})
+            }
+          })
+        )
 
-        setIsLoading(true);
+        setAudio(audioWithUrls.filter(audio => audio.path).sort((a,b)=>b.uploaded_at.localeCompare(a.uploaded_at)));
+        setDocuments(docsWithUrls.filter(doc => doc.path).sort((a,b)=>b.uploaded_at.localeCompare(a.uploaded_at)));
+        setImages(imagesWithUrls.filter(img => img.path).sort((a,b)=>b.uploaded_at.localeCompare(a.uploaded_at)));
 
-        const { data } = await api.get(`/data/all/${clientId}`);
-        setAccounts(data.accounts);
-
-        // Process images and documents in parallel
-        const [imagesWithUrls, docsWithUrls] = await Promise.all([
-          Promise.all(
-            data.images.map(async (img: FileMetadata) => {
-              const { data: signedUrl } = await supabase.storage
-                .from('clients_data')
-                .createSignedUrl(img.path, 3600);
-              return { ...img, signedUrl: signedUrl?.signedUrl || '' };
-            })
-          ),
-          Promise.all(
-            data.documents.map(async (doc: FileMetadata) => {
-              const { data: signedUrl } = await supabase.storage
-                .from('clients_data')
-                .createSignedUrl(doc.path, 3600);
-              return { ...doc, signedUrl: signedUrl?.signedUrl || '' };
-            })
-          )
-        ]);
-
-        setDocuments(docsWithUrls.filter(doc => doc.signedUrl));
-        setImages(imagesWithUrls.filter(img => img.signedUrl));
       } catch (error) {
         toast.error('Failed to load client data');
         console.error('Error loading data:', error);
@@ -87,8 +89,8 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
       }
     };
 
-    fetchData();
-  }, [selectedChat, api]);
+    organizeFiles();
+  }, [messages, isChatLoading]);
 
   const renderEmptyState = (message: string) => (
     <motion.div
@@ -103,33 +105,26 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
 
   const renderData = () => {
     switch (sector) {
-      case 'accounts':
-        return accounts.length > 0 ? (
-          <div className="space-y-3 p-2">
-            {accounts.map((account, i) => (
+      case 'all':
+        const allFiles = [...documents, ...images, ...audio];
+        return allFiles.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 p-2">
+            {allFiles.sort((a,b)=>b.uploaded_at.localeCompare(a.uploaded_at)).map((file, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3 bg-white rounded-lg shadow-xs border border-gray-100"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
               >
-                <div className="flex items-center gap-3">
-                  <Avatar size="sm" />
-                  <div className="overflow-hidden">
-                    <p className="font-medium text-gray-900 truncate">{account.email}</p>
-                    <p className="text-xs text-gray-500 truncate">{account.username}</p>
-                  </div>
-                </div>
+                <FileBox file={file} />
               </motion.div>
             ))}
           </div>
-        ) : renderEmptyState('No accounts found');
+        ) : renderEmptyState('No files found')
 
-      case 'all':
-        const allFiles = [...documents, ...images];
-        return allFiles.length > 0 ? (
+      case 'audio':
+        return audio.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 p-2">
-            {allFiles.map((file, i) => (
+            {audio.map((file, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -170,7 +165,6 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
             ))}
           </div>
         ) : renderEmptyState('No images found');
-
       default:
         return renderEmptyState('Invalid selection');
     }
@@ -178,22 +172,24 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
 
   return (
   <div className="relative h-full flex flex-col bg-gray-50 border-l border-gray-200">
-    {isLoading ? (
-      <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/80">
-        <Loader size={30} thickness={6} />
-      </div>
-    ) : selectedChat ? (
+    {
+    // isLoading ? (
+    //   <div className="absolute inset-0 flex items-center justify-center">
+    //     <Loader size={30} thickness={6} />
+    //   </div>
+    // ) : 
+    user ? (
       <>
         {/* Header with lower z-index */}
-        <div className="p-4 border-b border-gray-200 relative z-10">
-          <h2 className="text-lg font-semibold text-gray-900">Client Data</h2>
+        {/* <div className="p-4 border-b border-gray-200 bg-white relative">
+          <h2 className="text-lg font-semibold text-gray-900">Chat's Data</h2>
           <p className="text-xs text-gray-500 mt-1">
-            {selectedChat.users?.find(p => p.clientProfile)?.firstname}'s files
+            {user.firstname}'s files
           </p>
-        </div>
+        </div> */}
 
         {/* Navigation buttons with lower z-index */}
-        <div className="p-3 border-b border-gray-200 relative z-10">
+        <div className="p-3 border-b border-gray-200 relative">
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
             {sectorOptions.map((option) => (
               <button
@@ -214,9 +210,14 @@ const SidebarDataManager: React.FC<Props> = ({ selectedChat }) => {
 
         {/* Content area */}
         <div className="flex-1 overflow-y-auto p-2 relative z-0">
+          {isLoading?
+          <div className='w-full h-full flex items-center justify-center'>
+            <Loader size={30} thickness={6} />
+          </div>
+          :
           <AnimatePresence mode="wait">
             {renderData()}
-          </AnimatePresence>
+          </AnimatePresence>}
         </div>
       </>
     ) : (

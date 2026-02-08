@@ -196,18 +196,18 @@ const Sidebar: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute left-0 bottom-full mb-2 bg-white rounded-lg shadow-md border border-gray-200 z-10"
+                className="absolute left-0 bottom-full mb-2 bg-white rounded-lg shadow-md border border-gray-200 z-10 p-2"
               >
                 <Link
                   to="/settings"
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="flex items-center gap-3 pr-10 p-2 text-sm text-gray-700 hover:bg-gray-50"
                 >
                   <RiSettings3Line className="text-lg" />
                   <span>Settings</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                  className="flex items-center gap-3 pr-10 p-2 text-sm text-red-600 hover:bg-gray-50 w-full"
                 >
                   <RiLogoutBoxRLine className="text-lg" />
                   <span>Logout</span>

@@ -9,8 +9,8 @@ const KnowledgeBase = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   return (
-    <div className="p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-bold text-center mb-2">Knowledge Base</h2>
         <p className="text-gray-600 text-center mb-8">
           Find answers to common questions and solutions to frequent issues

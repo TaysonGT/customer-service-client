@@ -8,6 +8,7 @@ import AudioPlayer from './VoiceMessage';
 import { FiClock } from 'react-icons/fi';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { formatDate } from '../../utils/time';
+import ImagePreview from '../../components/ImagePreview';
 
 const URL_REGEX = /(?:(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z]{2,}){1,}(?:\/[^\s]*)?|(?:[a-z0-9-]+\.(?:com|net|org|io|co|gov|edu|me|ly|app|dev|ai|sh|gl|fm|bit\.ly|mm\.co)[^\s]*))/gi;
 
@@ -29,6 +30,8 @@ const formatFileSize = (bytes: number) => {
 const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i }) => {
   const [url, setUrl] = useState<string|null>(null)
   const [showDrop, setShowDrop] = useState<boolean>(false)
+  const [showPreview, setShowPreview] = useState<boolean>(false)
+
   const dropDownRef = useRef<HTMLDivElement>(null)
   const menuBtnRef = useRef<HTMLDivElement>(null)
   const [positionRatio, setPositionRatio] = useState(0);
@@ -55,7 +58,7 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
     e.preventDefault()
     const data = calculatePosition()
     setShowDrop(true)
-    console.log(data?.ratio? data.ratio<0.5?'top':'bottom': null)
+    // console.log(data?.ratio? data.ratio<0.5?'top':'bottom': null)
   }
 
   const messageClass = isCurrentUser
@@ -140,12 +143,14 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
 
       case 'image':
         return (
-          <div className="max-w-xs">
-            <div className='max-w-60 h-60'>
+          <div className="min-w-50 p-0.25"
+            onClick={()=>setShowPreview(true)}
+          >
+            <div className='max-w-60 h-60 bg-gray-200 rounded-md overflow-hidden cursor-pointer'>
               <img 
                 src={url||'#'} 
                 alt="Sent image"
-                className="rounded-md h-full object-cover"
+                className="h-full object-cover"
                 onDoubleClick={() => window.open(url||"#", '_blank')}
               />
             </div>
@@ -174,7 +179,7 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
       default:
         const lines = message.content.split('\n');
         return (
-          <p className="mt-1 min-w-10 flex flex-col">
+          <p className="mt-1 p-2 min-w-10 flex flex-col">
             {lines.map((line, idx) => {
               const firstChar = line.trim()[0];
               const isArabic = firstChar ? /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(firstChar) : false;
@@ -191,11 +196,12 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
   };
 
   return (
-    <div className={`p-2 rounded-md ${messageClass} ${i === 0 && headerClass} relative`}
+    <div className={`rounded-md ${messageClass} ${i === 0 && headerClass} relative`}
       onDoubleClick={openDropDownHandler}
       onContextMenu={openDropDownHandler}
       ref={elementRef}
     >
+      {showPreview&&<ImagePreview {...{src: url||'#', alt: message.content, show: showPreview, onClose: () => setShowPreview(false), type: 'chat'}}/>}
       <div className={`absolute z-1000 overflow-hidden rounded-lg p-2 border-gray-200 border scale-y-95 opacity-0 ${positionRatio>0.5?'bottom-[80%]':'top-[80%]'} left-1/2 -translate-x-1/2 bg-white text-black shadow-lg text-sm duration-200 ${showDrop? `pointer-events-auto opacity-100 scale-y-100 ${positionRatio>0.5?'bottom-[100%] origin-bottom':'top-[100%] origin-top'}`:'pointer-events-none'} `}>
         <div ref={dropDownRef} className='flex flex-col min-w-20 z-150 text-nowrap text-xs text-gray-700'>
           {isCurrentUser?
@@ -233,7 +239,8 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
           {message.type === 'image' && 
             <a 
               onClick={()=>setShowDrop(false)}
-              href={url||'#'} 
+              href={url||'#'}
+              target='_blank'
               download={`image-${message.createdAt}.jpg`}
               className='flex items-center gap-2 rounded-lg p-2 pr-10 cursor-pointer duration-75 hover:bg-gray-50'>
               {/* className="mt-2 inline-flex items-center text-sm text-blue-500 hover:underline" */}
@@ -246,7 +253,10 @@ const Message:React.FC<Props> = ({ message, isCurrentUser, audio, setAudio, i })
           </p>
         </div>
       </div>
+
+      {/* Message Content */}
       {renderMessageContent()}
+
       {isCurrentUser && (
         message.status === "sending" ?
         // <MdOutlineTimelapse className='bottom-2 left-1 text-secondary-text text-sm absolute' />

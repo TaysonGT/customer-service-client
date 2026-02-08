@@ -54,13 +54,6 @@ const ClientPortal: React.FC = () => {
         return
       }
       setTickets(data.tickets)
-      // setFilteredTickets(
-      //   data.tickets.filter(ticket => 
-      //     ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      //     ticket.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      //     ticket.description.toLowerCase().includes(searchQuery.toLowerCase())
-      //   )
-      // )
       setOpenTickets(data.tickets.filter(t => t.status === 'open' || t.status === 'in_progress'))
       setResolvedTickets(data.tickets.filter(t => t.status === 'resolved' || t.status === 'closed'))
     })

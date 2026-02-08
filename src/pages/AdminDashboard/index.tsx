@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FiUsers, FiMessageSquare, FiAlertTriangle, FiActivity, 
-  FiShield, FiArchive, FiRefreshCw, FiSearch, FiSliders,
+  FiShield, FiRefreshCw, FiSearch, FiSliders,
   FiBarChart2, FiUserX, FiClock, FiTrendingUp 
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,7 +63,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex h-screen w-full bg-gray-50">
+    <div className="flex h-full w-full bg-gray-50">
       {/* Admin Navigation Sidebar */}
       <div className="w-20 md:w-64 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200 flex items-center justify-center md:justify-start">
